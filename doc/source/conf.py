@@ -24,5 +24,11 @@ language = 'Python'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'insipid'
+
+html_theme_options = {
+    'body_centered': False,
+    'breadcrumbs': True,
+}
+
 html_static_path = ['_static']
 html_css_files = ['css/classes.css']

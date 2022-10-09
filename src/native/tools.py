@@ -1,4 +1,4 @@
-from .decoradores import Singleton
+from .decorators import Singleton
 from typing import Any
 
 @Singleton

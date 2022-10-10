@@ -2,7 +2,7 @@ build
 twine
 Sphinx
 flake8==3.9.2
-tox==3.24.3
+tox==3.26.0
 pytest==6.2.5
 pytest-cov==2.12.1
 mypy===0.910

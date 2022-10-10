@@ -1,5 +1,6 @@
-from .decorators import Singleton
+from native.decorators import Singleton
 from typing import Any
+
 
 @Singleton
 class Observer:
@@ -8,6 +9,7 @@ class Observer:
     fetch their values and remove them dynamiclly. Quite useful to access
     data inside a defined scope as it behaves as a Singleton.
     """
+
     def set(self, key: str, val: Any) -> None:
         """
         Let's you add and overwrite atributes given the name and value.
@@ -20,7 +22,7 @@ class Observer:
             val (Any): Value of the attribute to create/modify.
         """
         setattr(self, key, val)
-        
+
     def get(self, key: str) -> Any:
         """
         Let's you fetch data from the Observer. Current version let's you
@@ -34,7 +36,7 @@ class Observer:
             Any: The value stored in the attribute.
         """
         return getattr(self, key)
-      
+
     def delete(self, key: str) -> None:
         """
         Let's you remove data from the Observer.

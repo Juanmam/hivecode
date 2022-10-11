@@ -6,4 +6,4 @@ decorators that can be used to enhance classes and functions.
 
 .. toctree::
     
-    singletone
+    singleton

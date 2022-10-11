@@ -1,14 +1,16 @@
-Singletone
-==========
+Singleton
+=========
 
 .. role:: method
 
-hivecode.native.decorators. :method:`Singletone`
+hivecode.native.decorators. :method:`Singleton`
 
     Defines a class as a Singleton. This makes it so that trying to 
     instanciate a class more than once, will always return a single
     instance of the class.
 
+Example
+^^^^^^^
 ..  code-block:: python
     
     @Singleton

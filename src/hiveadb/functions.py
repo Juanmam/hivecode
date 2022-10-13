@@ -87,3 +87,165 @@ def mount(storage:     str,
         list(map(lambda mount_name: __mount(mount_name), tqdm(mounts, desc="Mounts", position=0, leave=True)))
     else:
         list(map(lambda mount_name: __mount(mount_name), mounts))
+
+
+def read_csv(file_name:      str, 
+             file_path:      str, 
+             delimiter:      str  = ',',
+             infer_schema:   bool = True,
+             include_header: bool = False,
+             as_pandas:      bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("csv")\
+                             .option("delimiter", delimiter)\
+                             .option("inferSchema", infer_schema)\
+                             .option("header", include_header)\
+                             .load(f"{file_path}/{file_name}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("csv")\
+                             .option("delimiter", delimiter)\
+                             .option("inferSchema", infer_schema)\
+                             .option("header", include_header)\
+                             .load(f"{file_path}/{file_name}")
+        except:
+            raise
+
+
+def read_json(file_name:   str, 
+             file_path:    str,
+             is_multiline: bool = False,
+             as_pandas:    bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("json")\
+                             .option("multiline",is_multiline) \
+                             .load(f"{file_path}/{file_name}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("json")\
+                             .option("multiline",is_multiline) \
+                             .load(f"{file_path}/{file_name}")
+        except:
+            raise
+
+
+def read_parquet(file_name: str,
+                 path:      str,
+                 as_pandas: bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("parquet")\
+                             .load(f"{path}/{file_name}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("parquet")\
+                             .load(f"{path}/{file_name}")
+        except:
+            raise
+
+
+def read_orc(file_name: str,
+             path:      str,
+             condition: str  = '',
+             as_pandas: bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("orc")\
+                             .load(f"{path}/{file_name}/{condition}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("orc")\
+                             .load(f"{path}/{file_name}/{condition}")
+        except:
+            raise
+
+
+def read_text(file_name:        str,
+              path:             str,
+              line_separator:   str  = "\n",
+              whole_text:       bool = False,
+              as_pandas:        bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("text")\
+                             .option("lineSep", line_separator)\
+                             .option("wholetext", whole_text)\
+                             .load(f"{path}/{file_name}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("text")\
+                             .option("lineSep", line_separator)\
+                             .option("wholetext", whole_text)\
+                             .load(f"{path}/{file_name}")
+        except:
+            raise
+
+
+def read_jdbc(server_url: str,
+              schema:     str,
+              table_name: str,
+              user:       str,
+              password:   str,
+              sql_type:   str  = "mysql",
+              as_pandas:  bool = False):
+    if as_pandas:
+        try:
+            return spark.read.format("jdbc")\
+                             .option("url", f"jdbc:{sql_type}:{server_url}")\
+                             .option("dbtable", f"{schema}.{table_name}")\
+                             .option("user", user)\
+                             .option("password", password)\
+                             .load().toPandas()
+        except:
+            raise
+    else:
+        try:
+            return spark.read.format("jdbc")\
+                             .option("url", f"jdbc:{sql_type}:{server_url}")\
+                             .option("dbtable", f"{schema}.{table_name}")\
+                             .option("user", user)\
+                             .option("password", password)\
+                             .load()
+        except:
+            raise
+
+
+def read_libsvm(file_name:        str,
+                path:             str,
+                number_features:  str = None,
+                as_pandas:        bool = False):
+    if as_pandas:
+        
+        try:
+            if number_features:
+                return spark.read.format("libsvm")\
+                                 .option("numFeatures", number_features)\
+                                 .load(f"{path}/{file_name}").toPandas()
+            else:
+                return spark.read.format("libsvm")\
+                                 .load(f"{path}/{file_name}").toPandas()
+        except:
+            raise
+    else:
+        try:
+            if number_features:
+                return spark.read.format("libsvm")\
+                                 .option("numFeatures", number_features)\
+                                 .load(f"{path}/{file_name}")        
+            else:
+                return spark.read.format("libsvm")\
+                                 .load(f"{path}/{file_name}")
+        except:
+            raise

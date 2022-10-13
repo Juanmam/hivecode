@@ -4,8 +4,7 @@ Mount
 .. role:: method
 .. role:: param
 
-hivecode.hiveadb.functions. :method:`mount` ( :param:`storage: str, key: str, mount_point: str, mounts: List[str],` 
-                                              :param:`verbose: bool` )
+hivecode.hiveadb.functions. :method:`mount` ( :param:`storage: str, key: str, mount_point: str, mounts: List[str], verbose: bool` )
 
     Mounts a list of containers from Azure Storage to DataBricks.
 

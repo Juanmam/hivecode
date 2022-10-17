@@ -9,10 +9,4 @@ Functions
     :maxdepth: 1
     
     mount
-    read_csv
-    read_json
-    read_parquet
-    read_text
-    read_jdbc
-    read_orc
-    read_libsvm
+    data_convert

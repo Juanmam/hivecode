@@ -18,3 +18,4 @@ Documentation
    modules/native/decorators/decorators
    modules/native/tools/tools
    modules/hiveadb/functions/functions
+   modules/hiveadb/io/io

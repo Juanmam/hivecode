@@ -79,6 +79,7 @@ def write_json(df, file_name: str, path: str, num_files: int = 1):
 def read_parquet(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas"):
     return data_convert(koalas_read_parquet(f"{source}:{path}/{file_name}"), as_type=as_type)
 
+
 def write_parquet(df, file_name: str, path: str, mode: str = "overwrite"):
     data_convert(df, as_type="koalas").to_parquet(path=fr'{path}/{file_name}', mode = mode)
 
@@ -110,4 +111,4 @@ def read_sql(table_name: str, db: str, sql_type: str = "sqlite", as_type: str = 
 
 
 def write_sql(df, table_name: str, db: str, sql_type: str = "sqlite", mode: str = "append"):
-    df.to_spark_io(format="jdbc", mode=mode, dbtable=table_name, url=f"jdbc:{sql_type}:{db}")
+    data_convert(df, as_type="koalas").to_spark_io(format="jdbc", mode=mode, dbtable=table_name, url=f"jdbc:{sql_type}:{db}")

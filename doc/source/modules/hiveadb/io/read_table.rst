@@ -4,8 +4,7 @@ Read Table
 .. role:: method
 .. role:: param
 
-hivecode.hiveadb.io. :method:`read_table` (:param:`table_name: str, db: str, as_type: str`)
-:param:`index: Union[str, List[str], None], threads: int`
+hivecode.hiveadb.io. :method:`read_table` (:param:`table_name: str, db: str, as_type: str, index: Union[str, List[str], None], threads: int`
 
     Reads a table from the hive metastore into a DataFrame. By default, it will return a Spark dataframe.
     You can specify the number of threads to use to make the reading faster if you are trying to read multiple

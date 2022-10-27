@@ -11,19 +11,19 @@ spark   = get_spark()
 from multiprocessing.pool import ThreadPool
 from threading import Thread
 from queue import Queue
+from typing import Union, List
 
 
-def read_table(table_name: str, db: str = "default", as_type: str = "spark", threads: int = 2):
-    def read_table_f(table_name: str, db: str = "default", as_type: str = "spark"):
-            return data_convert(koalas_read_table(f"{db}.{table_name}"), as_type=as_type)
+def read_table(table_name: str, db: str = "default", as_type: str = "koalas", index: Union[str, List[str], None] = None, threads: int = 2):
+    def read_table_f(table_name: str, db: str = "default", as_type: str = "koalas", index: Union[str, List[str], None] = None):
+            return data_convert(koalas_read_table(f"{db}.{table_name}", index_col = index), as_type=as_type)
     if isinstance(table_name, list):
         pool = ThreadPool(threads)
-        return list(map(lambda table: pool.apply_async(read_table_f, kwds={"table_name": table, "db": db, "as_type": as_type}).get(), table_name))
+        return list(map(lambda table: pool.apply_async(read_table_f, kwds={"table_name": table, "db": db, "as_type": as_type, "index": index}).get(), table_name))
     elif isinstance(table_name, str):
         return read_table_f(table_name, db, as_type)
 
-
-def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite", threads: int = 2):
+def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite", partitions: Union[str, List[str], None] = None, index: Union[str, List[str], None] = None, threads: int = 2):
     # We pack items in a list to be able to use them in he threads process.
     if not isinstance(df, list):
         df = [df]
@@ -31,10 +31,10 @@ def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/ta
         table_name = [table_name]
         
     # This is the normal definition that will create a single table.
-    def write_table_f(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite"):
+    def write_table_f(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite", partitions: Union[str, List[str], None] = None, index: Union[str, List[str], None] = None) -> None:
         # Write .delta file in datalake
         delta_path = f'{delta_path}/{db}/{table_name}/'.replace('//', '/')
-        data_convert(df, as_type="koalas").to_delta(delta_path, mode=mode)
+        data_convert(df, as_type="koalas").to_delta(delta_path, mode=mode, partition_cols = partitions, index_col = index)
         # Create DB if not exist
         spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
         # Create Table
@@ -56,6 +56,8 @@ def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/ta
         args["db"] = kwargs.get("db")
         args["delta_path"] = kwargs.get("delta_path")
         args["mode"] = kwargs.get("mode")
+        args["partitions"] = kwargs.get("partitions")
+        args["index"] = kwargs.get("index")
         q.put(args)
 
     # Wrapper to run tasks

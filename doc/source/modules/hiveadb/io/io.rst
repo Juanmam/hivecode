@@ -8,7 +8,10 @@ IO
 .. toctree::
     :maxdepth: 1
     
+    read_table
+    write_table
     read_csv
+    write_csv
     read_json
     read_parquet
     read_delta

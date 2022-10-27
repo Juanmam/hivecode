@@ -80,8 +80,51 @@ def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/ta
     return q.join()
 
 
-def read_csv(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas"):
-    return data_convert(koalas_read_csv(f"{source}:{path}/{file_name}"), as_type=as_type)
+def read_csv(file_name: str, path: str, header: bool = 0, source: str = "dbfs", as_type: str = "koalas", engine: str = "koalas"):
+    if engine == "koalas":
+        if header and isinstance(header, bool):
+            header = 'infer'
+        elif not header and isinstance(header, bool):
+            header = None
+        if isinstance(header, int): 
+            header_index = header
+            header = False
+        
+        df = koalas_read_csv(f"{source}:{path}/{file_name}", header = header)
+        
+        if header_index:
+            for df_column in df.columns:
+                df = df.rename(columns = {df_column: f"{df.loc[header_index][df_column]}"})
+            df = df.loc[header_index:]
+    elif engine == "pandas":
+        if header and isinstance(header, bool):
+            header = 'infer'
+        elif not header and isinstance(header, bool):
+            header = None
+        else:
+            header = header
+            
+        df = pandas_read_csv(f"/{source}{path}/{file_name}", header = header)
+    elif engine == "spark":
+        if isinstance(header, int): 
+            header_index = header
+            header = False
+        else:
+            header_index = False
+        
+        df = spark.read.format("csv")\
+                       .option("header", header)\
+                       .load(f"{source}:{path}/{file_name}")
+        
+        if isinstance(header_index, int):
+            for df_column in df.columns:
+                df = df.withColumnRenamed(df_column, df.limit(header_index + 1).tail(1)[0][df_column])
+                df = df.join(df.limit(header_index + 1), df.columns, how = "leftanti")
+        else:
+            if not header:
+                for df_column in df.columns:
+                    df = df.withColumnRenamed(df_column, df_column.replace("_c", ""))
+    return data_convert(df, as_type=as_type)
 
 
 def write_csv(df, 

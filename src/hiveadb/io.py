@@ -13,8 +13,8 @@ from threading import Thread
 from queue import Queue
 
 
-def read_table(table_name: str, db: str = "default", as_type: str = "koalas", threads: int = 2):
-    def read_table_f(table_name: str, db: str = "default", as_type: str = "koalas"):
+def read_table(table_name: str, db: str = "default", as_type: str = "spark", threads: int = 2):
+    def read_table_f(table_name: str, db: str = "default", as_type: str = "spark"):
             return data_convert(koalas_read_table(f"{db}.{table_name}"), as_type=as_type)
     if isinstance(table_name, list):
         pool = ThreadPool(threads)

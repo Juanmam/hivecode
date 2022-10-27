@@ -5,8 +5,7 @@ Write Table
 .. role:: param
 
 
-hivecode.hiveadb.io. :method:`write_table` (:param:`df: DataFrame, table_name, db: str, delta_path: str,` 
-:param:`mode: str, threads: int`)
+hivecode.hiveadb.io. :method:`write_table` (:param:`df: Union[DataFrame, List[DataFrame]], table_name: Union[str, List[str]], db: str, delta_path: str,mode: str, partitions: Union[str, List[str], None], index: Union[str, List[str], None], threads: int`)
 
     Writes a table into the hive metastore from a DataFrame. You can specify the number of threads to use
     to make the writing faster if you are trying to write multiple tables at a time.

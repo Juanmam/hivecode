@@ -1,4 +1,4 @@
-from hiveadb.functions import get_spark, data_convert
+from .functions import get_spark, data_convert
 
 from databricks.koalas import read_excel as koalas_read_excel, read_delta as koalas_read_delta, read_table as koalas_read_table,\
 read_json as koalas_read_json, read_csv as koalas_read_csv, read_parquet as koalas_read_parquet, read_orc as koalas_read_orc,\
@@ -8,22 +8,76 @@ from os import system, path as ospath
 
 spark   = get_spark()
 
+from multiprocessing.pool import ThreadPool
+from threading import Thread
+from queue import Queue
 
-def read_table(table_name: str, db: str = "default", as_type: str = "koalas"):
-    return data_convert(koalas_read_table(f"{db}.{table_name}"), as_type=as_type)
+
+def read_table(table_name: str, db: str = "default", as_type: str = "koalas", threads: int = 2):
+    def read_table_f(table_name: str, db: str = "default", as_type: str = "koalas"):
+            return data_convert(koalas_read_table(f"{db}.{table_name}"), as_type=as_type)
+    if isinstance(table_name, list):
+        pool = ThreadPool(threads)
+        return list(map(lambda table: pool.apply_async(read_table_f, kwds={"table_name": table, "db": db, "as_type": as_type}).get(), table_name))
+    elif isinstance(table_name, str):
+        return read_table_f(table_name, db, as_type)
 
 
-def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite"):
-    # Write .delta file in datalake
-    delta_path = f'{delta_path}/{table_name}/'.replace('//', '/')
-    data_convert(df, as_type="koalas").to_delta(delta_path, mode=mode)
+def write_table(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite", threads: int = 2):
+    # We pack items in a list to be able to use them in he threads process.
+    if not isinstance(df, list):
+        df = [df]
+    if not isinstance(table_name, list):
+        table_name = [table_name]
+        
+    # This is the normal definition that will create a single table.
+    def write_table_f(df, table_name, db: str = "default", delta_path = "/FileStore/tables/", mode: str = "overwrite"):
+        # Write .delta file in datalake
+        delta_path = f'{delta_path}/{db}/{table_name}/'.replace('//', '/')
+        data_convert(df, as_type="koalas").to_delta(delta_path, mode=mode)
+        # Create DB if not exist
+        spark.sql(f"CREATE DATABASE IF NOT EXISTS {db}")
+        # Create Table
+        ddl_query = f"CREATE TABLE IF NOT EXISTS {db}.{table_name} USING DELTA LOCATION '{delta_path}'"
+        spark.sql(ddl_query)
+    
+    # Create a queue
+    q = Queue()
 
-    # Create DB if not exist
-    spark.sql(f"create database if not exists {db}")
+    # Define the amount of threads
+    worker_count = threads
 
-    # Create Table
-    ddl_query = f"CREATE TABLE if not exists {db}.{table_name} USING DELTA LOCATION '{delta_path}'"
-    spark.sql(ddl_query)
+    # Organize args into queue
+    for _df, table in zip(df, table_name):
+        kwargs = locals()
+        args = dict()
+        args["table_name"] = table
+        args["df"] = _df
+        args["db"] = kwargs.get("db")
+        args["delta_path"] = kwargs.get("delta_path")
+        args["mode"] = kwargs.get("mode")
+        q.put(args)
+
+    # Wrapper to run tasks
+    def run_tasks(function, q):
+        while not q.empty():
+            kwargs = q.get()
+            df = kwargs.get("df")
+            table_name = kwargs.get("table_name")
+            db = kwargs.get("db")
+            delta_path = kwargs.get("delta_path")
+            mode = kwargs.get("mode")
+            function(df = df, table_name = table_name, db = db, delta_path = delta_path, mode = mode)
+            q.task_done()
+
+    # Run tasks in threads
+    for i in range(worker_count):
+        t=Thread(target=run_tasks, args=(write_table_f, q))
+        t.daemon = True
+        t.start()
+
+    # Finish process
+    return q.join()
 
 
 def read_csv(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas"):

@@ -4,7 +4,7 @@ Write CSV
 .. role:: method
 .. role:: param
 
-hivecode.hiveadb.io. :method:`write_csv` (:param:`df, file_name: str, path: str, sep: str, nas: str, header: bool, mode: str, num_files: int`)
+hivecode.hiveadb.io. :method:`write_csv` (:param:`df, file_name: str, path: str, sep: str, nas: str, header: bool, mode: str, num_files: int, threads: int`)
 
     Writes a CSV file from a DataFrame into the file system.
 

@@ -519,6 +519,63 @@ def read_avro(file_name: str, path: str, source: str = "dbfs", as_type: str = "k
             file_name = f"{file}.avro"
         return read_avro_f(file_name, path, source, as_type, engine)
 
+
+from azure.cosmos import CosmosClient, PartitionKey
+from string import digits, ascii_letters, punctuation
+from random import choice
+from json import loads
+
+def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas", threads: int = 2):
+    def read_cosmos_f(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas"):
+        # CLIENT CONNECT
+        client    = CosmosClient(endpoint, credential=key)
+
+        # SELECT DB
+        db        = client.get_database_client(database)
+
+        # SELECT CONTAINER
+        container = db.get_container_client(container)
+        if engine == "koalas":
+            raise NotImplementedError("Current version of PyArrow does not support this operation. Use Pandas as engine, transform all complex variables into str type and transform.")
+        elif engine == "spark":
+            raise NotImplementedError("Current version of PyArrow does not support this operation. Use Pandas as engine, transform all complex variables into str type and transform.")
+        elif engine == "pandas":
+            return data_convert(DataFrame(container.read_all_items()), as_type=as_type)
+    if isinstance(endpoint, list):
+        pool = ThreadPool(threads)
+        return list(map(lambda point: pool.apply_async(read_cosmos_f, kwds={"endpoint": point, "key": key, "database": database, "container": container, "as_type": as_type, "engine": engine}).get(), endpoint))
+    elif isinstance(endpoint, str):
+        return read_cosmos_f(endpoint,key, database, container, as_type, engine)
+
+
+def write_cosmos(df, endpoint: str, key: str, database: str, container: str, unique_keys: str = None, id: str = 'id', threads: int = 2):
+    if not isinstance(df, list):
+        df = [df]
+        
+    char_list = list(digits) + list(ascii_letters) + list(punctuation)
+    def generate_unique_keys(length: int = 32):
+        return ''.join(choice(char_list) for i in range(length))
+    if not unique_keys:
+        df["__unique_key"] = ""
+        df["__unique_key"] = df["__unique_key"].apply(lambda _: generate_unique_keys(32))
+    
+    # CLIENT CONNECT
+    client    = CosmosClient(endpoint, credential=key)
+
+    # SELECT DB
+    db        = client.get_database_client(database)
+    
+    # SELECT CONTAINER
+    container = db.get_container_client(container)
+    
+    pool = ThreadPool(threads)
+
+    def store_data(container, request_body):
+        return container.create_item(body=request_body)
+    
+    return list(map(lambda item: pool.apply_async(store_data, kwds={"container": container, "request_body": item}), loads(df.to_json(orient='records'))))
+
+
 @deprecated("Current version is not tested, not recommended for use.")
 def write_avro():
     return

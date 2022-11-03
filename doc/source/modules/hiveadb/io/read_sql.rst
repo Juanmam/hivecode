@@ -1,5 +1,5 @@
-Read JDBC
-=========
+Read SQL
+========
 
 .. role:: method
 .. role:: param

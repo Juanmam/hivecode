@@ -1,14 +1,25 @@
 from .functions import get_spark, get_dbutils, data_convert
 
+# Azure
+from azure.cosmos import CosmosClient, PartitionKey
+
+# Data
 from databricks.koalas import read_excel as koalas_read_excel, read_delta as koalas_read_delta, read_table as koalas_read_table,\
 read_json as koalas_read_json, read_csv as koalas_read_csv, read_parquet as koalas_read_parquet, read_orc as koalas_read_orc,\
 read_sql as koalas_read_sql
-from pyspark.pandas import read_delta as ps_read_delta, read_table as ps_read_table, read_orc as ps_read_orc
+from pyspark.pandas import read_delta as ps_read_delta, read_table as ps_read_table, read_orc as ps_read_orc, \
+read_sql_query
 from pandas import DataFrame, ExcelWriter, read_csv as pandas_read_csv, read_json as pandas_read_json, read_parquet as pandas_read_parquet,\
 read_excel as pandas_read_excel, read_orc as pandas_read_orc
 from os import system, path as ospath
 from py4j.protocol import Py4JJavaError
 from native.decorators import deprecated
+
+# SSH, SCP
+from paramiko import SSHClient, AutoAddPolicy
+from scp import SCPClient
+
+from functools import lru_cache
 
 spark   = get_spark()
 dbutils = get_dbutils()
@@ -18,6 +29,9 @@ from threading import Thread
 from queue import Queue
 from typing import Union, List
 
+from string import digits, ascii_letters, punctuation
+from random import choice
+from json import loads
 
 # TABLE
 def read_table(table_name: str, db: str = "default", as_type: str = "koalas", index: Union[str, List[str], None] = None, engine: str = "koalas", threads: int = 2):
@@ -520,10 +534,7 @@ def read_avro(file_name: str, path: str, source: str = "dbfs", as_type: str = "k
         return read_avro_f(file_name, path, source, as_type, engine)
 
 
-from azure.cosmos import CosmosClient, PartitionKey
-from string import digits, ascii_letters, punctuation
-from random import choice
-from json import loads
+
 
 def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas", threads: int = 2):
     def read_cosmos_f(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas"):
@@ -576,26 +587,72 @@ def write_cosmos(df, endpoint: str, key: str, database: str, container: str, uni
     return list(map(lambda item: pool.apply_async(store_data, kwds={"container": container, "request_body": item}), loads(df.to_json(orient='records'))))
 
 
+def read_sql(table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", as_type: str = "koalas", engine = "koalas", threads: int = 2):
+    def read_sql_f(table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", as_type: str = "koalas", engine = "koalas"):
+        if engine == "koalas":
+            return data_convert(koalas_read_sql(table_name, con=f"jdbc:{sql_type}://{server}{cert}:{port};database={database};user={user}@{server};password={password}"), as_type=as_type)
+        elif engine == "spark":
+            raise NotImplementedError("Current version of Hivecode doesn't support Spark connection for SQL.")
+        elif engine == "pandas":
+            # Remove to_pandas() after data_convert supports ps transformations.
+            return data_convert(read_sql_query(f"SELECT * FROM {table_name}", f"jdbc:{sql_type}://{server}{cert}:{port};database={database};user={user}@{server};password={password}").to_pandas(), as_type = as_type)
+    if isinstance(table_name, list):
+        pool = ThreadPool(threads)
+        return list(map(lambda file: pool.apply_async(read_sql_f, kwds={"table_name": file, "database": database, "server": server, "port": port, "user": user, "password": password, "sql_type": sql_type, "cert": cert, "as_type": as_type, "engine": engine}).get(), table_name))
+    elif isinstance(table_name, str):
+        return read_sql_f(table_name, database, server, port, user, password, sql_type, cert, as_type, engine)
+    
+def write_sql(df, table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", engine = "koalas", threads: int = 2):
+    kwds = locals()
+    del kwds['threads']
+    def write_sql_f(df, table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", mode = "append", engine = "spark"):
+        if engine == "koalas":
+            raise NotImplementedError("Current version of Hivecode doesn't support writing to a sqldb using Koalas.")
+        elif engine == "spark":
+            jdbcUrl = f"jdbc:sqlserver://{server}.database.windows.net:{port};database={database};"
+            connectionProperties = {
+              "user" : user,
+              "password" : password,
+              "driver" : "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+            }
+
+            try:
+                data_convert(df, as_type="spark").write.jdbc(url=jdbcUrl, table=table_name, properties=connectionProperties, mode = mode)
+            except Exception as e:
+                if "com.microsoft.sqlserver.jdbc.SQLServerException: The specified schema name" in str(e.java_exception):
+                    # We create a new db and try again.
+                    raise Exception("Table not created.")
+                elif "No suitable driver" == str(e.java_exception):
+                    raise Exception("Driver not installed in cluster. Please install it using Maven Central 'com.microsoft.sqlserver.msi:msi-mssql-jdbc:2.0.3'")
+                raise
+        elif engine == "pandas":
+            raise NotImplementedError("Current version of Hivecode doesn't support writing to a sqldb using Pandas.")
+    
+    # We encapsulate the data into a list if it's not already a list.
+    if not isinstance(df, list):
+        df = [df]
+    if not isinstance(table_name, list):
+        table_name = [table_name]
+    pool = ThreadPool(threads)
+    def gen_args(kwds, table):
+        kwds["table_name"] = table
+        return kwds
+    kwds = list(map(lambda table: gen_args(kwds, table), table_name))
+    list(map(lambda kwd: pool.apply_async(write_sql_f, kwds=kwd).get(), kwds))
+
 @deprecated("Current version is not tested, not recommended for use.")
 def write_avro():
     return
 
-@deprecated("Current version is not tested, not recommended for use.")
-def read_sql(table_name: str, db: str, sql_type: str = "sqlite", as_type: str = "koalas"):
-    return data_convert(koalas_read_sql(table_name, con=f"jdbc:{sql_type}:{db}"), as_type=as_type)
-
-@deprecated("Current version is not tested, not recommended for use.")
-def write_sql(df, table_name: str, db: str, sql_type: str = "sqlite", mode: str = "append"):
-    data_convert(df, as_type="koalas").to_spark_io(format="jdbc", mode=mode, dbtable=table_name, url=f"jdbc:{sql_type}:{db}")
-
 
 @lru_cache(maxsize=None)
-def createSSHClient(server: str, port: str, user: str, password: str) ->:
-    client = paramiko.SSHClient()
+def createSSHClient(server: str, port: str, user: str, password: str):
+    client = SSHClient()
     client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.set_missing_host_key_policy(AutoAddPolicy())
     client.connect(server, port, user, password)
     return client
+
 
 def transfer_file(file_name: str, path: str, fs_path: str = "/FileStore/tables/", server: str = None, port: str = None, user: str = None, password: str = None) -> None:
     # BUILD SSH AND SCP CONNECTIONS

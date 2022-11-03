@@ -1,5 +1,5 @@
 Write CSV
-========
+=========
 
 .. role:: method
 .. role:: param
@@ -18,5 +18,5 @@ Example
 ^^^^^^^
 ..  code-block:: python
 
-    df = write_csv('diabetes.csv', '/mnt/silver-zone/', as_type="spark")
+    df = write_csv('diabetes.csv', '/mnt/silver-zone/')
 

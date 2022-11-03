@@ -4,7 +4,7 @@ Read JSON
 .. role:: method
 .. role:: param
 
-hivecode.hiveadb.io. :method:`read_json` (:param:`file_name: str, path: str, source: str, as_type: bool, engine: str, threads: int`)
+hivecode.hiveadb.io. :method:`read_json` (:param:`file_name: str, path: str, source: str, as_type: str, engine: str, threads: int`)
 
     Reads a JSON file from dbfs into a Koalas DataFrame. Can be configured to return a Pandas DataFrame.
 

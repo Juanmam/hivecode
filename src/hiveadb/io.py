@@ -512,30 +512,8 @@ def write_orc(df, file_name: str, path: str, source: str = "dbfs", mode = "overw
     
     kwds = list(map(lambda file: gen_args(kwds, file), file_name))
     return list(map(lambda kwd: pool.apply_async(write_orc_f, kwds=kwd).get(), kwds))
-    
-# AVRO
-def read_avro(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas", engine: str = "spark", threads: int = 2):
-    def read_avro_f(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas", engine: str = "spark"):
-        if engine == "koalas":
-            raise NotImplementedError("Current version of Koalas does not support this operation. Use Spark as engine.")
-        elif engine == "spark":
-            return data_convert(spark.read.format("avro").load(f"{source}:{path}/{file_name}"), as_type = as_type)
-        elif engine == "pandas":
-            raise NotImplementedError("Current version of Pandas does not support this operation. Use Spark as engine.")
-    if isinstance(file_name, list):
-        for file in file_name:
-            if not file.endswith(".avro"):
-                file = f"{file}.avro"
-        pool = ThreadPool(threads)
-        return list(map(lambda file: pool.apply_async(read_avro_f, kwds={"file_name": file, "path": path, "source": source, "as_type": as_type, "engine": engine}).get(), file_name))
-    elif isinstance(file_name, str):
-        if not file_name.endswith(".avro"):
-            file_name = f"{file}.avro"
-        return read_avro_f(file_name, path, source, as_type, engine)
 
-
-
-
+# Cosmos
 def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas", threads: int = 2):
     def read_cosmos_f(endpoint: str, key: str, database: str, container: str, as_type: str = "koalas", engine: str = "pandas"):
         # CLIENT CONNECT
@@ -552,11 +530,11 @@ def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type:
             raise NotImplementedError("Current version of PyArrow does not support this operation. Use Pandas as engine, transform all complex variables into str type and transform.")
         elif engine == "pandas":
             return data_convert(DataFrame(container.read_all_items()), as_type=as_type)
-    if isinstance(endpoint, list):
+    if isinstance(container, list):
         pool = ThreadPool(threads)
-        return list(map(lambda point: pool.apply_async(read_cosmos_f, kwds={"endpoint": point, "key": key, "database": database, "container": container, "as_type": as_type, "engine": engine}).get(), endpoint))
-    elif isinstance(endpoint, str):
-        return read_cosmos_f(endpoint,key, database, container, as_type, engine)
+        return list(map(lambda contain: pool.apply_async(read_cosmos_f, kwds={"endpoint": endpoint, "key": key, "database": database, "container": contain, "as_type": as_type, "engine": engine}).get(), container))
+    elif isinstance(container, str):
+        return read_cosmos_f(container, key, database, container, as_type, engine)
 
 
 def write_cosmos(df, endpoint: str, key: str, database: str, container: str, unique_keys: str = None, id: str = 'id', threads: int = 2):
@@ -586,7 +564,7 @@ def write_cosmos(df, endpoint: str, key: str, database: str, container: str, uni
     
     return list(map(lambda item: pool.apply_async(store_data, kwds={"container": container, "request_body": item}), loads(df.to_json(orient='records'))))
 
-
+# SQL
 def read_sql(table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", as_type: str = "koalas", engine = "koalas", threads: int = 2):
     def read_sql_f(table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str = "sqlserver", cert: str = ".database.windows.net", as_type: str = "koalas", engine = "koalas"):
         if engine == "koalas":
@@ -640,11 +618,33 @@ def write_sql(df, table_name: str, database: str, server: str, port: str, user: 
     kwds = list(map(lambda table: gen_args(kwds, table), table_name))
     list(map(lambda kwd: pool.apply_async(write_sql_f, kwds=kwd).get(), kwds))
 
+
+# AVRO
+def read_avro(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas", engine: str = "spark", threads: int = 2):
+    def read_avro_f(file_name: str, path: str, source: str = "dbfs", as_type: str = "koalas", engine: str = "spark"):
+        if engine == "koalas":
+            raise NotImplementedError("Current version of Koalas does not support this operation. Use Spark as engine.")
+        elif engine == "spark":
+            return data_convert(spark.read.format("avro").load(f"{source}:{path}/{file_name}"), as_type = as_type)
+        elif engine == "pandas":
+            raise NotImplementedError("Current version of Pandas does not support this operation. Use Spark as engine.")
+    if isinstance(file_name, list):
+        for file in file_name:
+            if not file.endswith(".avro"):
+                file = f"{file}.avro"
+        pool = ThreadPool(threads)
+        return list(map(lambda file: pool.apply_async(read_avro_f, kwds={"file_name": file, "path": path, "source": source, "as_type": as_type, "engine": engine}).get(), file_name))
+    elif isinstance(file_name, str):
+        if not file_name.endswith(".avro"):
+            file_name = f"{file}.avro"
+        return read_avro_f(file_name, path, source, as_type, engine)
+
+
 @deprecated("Current version is not tested, not recommended for use.")
 def write_avro():
     return
 
-
+# File Transfer
 @lru_cache(maxsize=None)
 def createSSHClient(server: str, port: str, user: str, password: str):
     client = SSHClient()

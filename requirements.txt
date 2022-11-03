@@ -1,3 +1,6 @@
+paramiko==2.11.0
+scp==0.14.4
+sklearn==0.24.1
 azure-cosmos==4.3.0
 openpyxl==3.0.10
 tqdm==4.64.1

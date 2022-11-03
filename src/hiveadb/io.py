@@ -587,3 +587,20 @@ def read_sql(table_name: str, db: str, sql_type: str = "sqlite", as_type: str = 
 @deprecated("Current version is not tested, not recommended for use.")
 def write_sql(df, table_name: str, db: str, sql_type: str = "sqlite", mode: str = "append"):
     data_convert(df, as_type="koalas").to_spark_io(format="jdbc", mode=mode, dbtable=table_name, url=f"jdbc:{sql_type}:{db}")
+
+
+@lru_cache(maxsize=None)
+def createSSHClient(server: str, port: str, user: str, password: str) ->:
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(server, port, user, password)
+    return client
+
+def transfer_file(file_name: str, path: str, fs_path: str = "/FileStore/tables/", server: str = None, port: str = None, user: str = None, password: str = None) -> None:
+    # BUILD SSH AND SCP CONNECTIONS
+    ssh = createSSHClient(server, port, user, password)
+    scp = SCPClient(ssh.get_transport())
+    
+    # PERFORM SCP OPERATION.
+    scp.get(rf"{path}/{file_name}", fs_path)

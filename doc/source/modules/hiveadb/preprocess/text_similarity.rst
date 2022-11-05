@@ -1,7 +1,6 @@
 Text Similarity
 ===============
 
-
 .. role:: method
 .. role:: param
 
@@ -14,6 +13,7 @@ Parameters
 * method: Defined only for the vectorization type when using cosine similarity as the engine.
     * "tfid"
     * "count"
+
 * engine: The type of similarity to apply. The following are good options:
     * cosine: Uses cosine similarity. Recommended for long texts.
     * jaro: Uses Jaro similarity. Recommended for short texts or words.

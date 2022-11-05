@@ -1,3 +1,6 @@
+from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS,\ 
+SPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+
 from typing import List
 from tqdm import tqdm
 
@@ -92,44 +95,44 @@ def mount(storage:     str,
 
 def data_convert(df, as_type: str):
     # Koalas
-    if str(type(df)) == "<class 'databricks.koalas.frame.DataFrame'>":
-        if as_type.lower() == "pandas":
+    if str(type(df)) == KOALAS_TYPES.get("df"):
+        if as_type.lower() == PANDAS:
             return df.to_pandas()  # Koalas to Pandas
-        elif as_type.lower() == "spark":
+        elif as_type.lower() == SPARK:
             return df.to_spark()   # Koalas to Spark
-        elif as_type.lower() in ["pyspark.pandas", "spark.pandas", "ps"]:
+        elif as_type.lower() in IN_PANDAS_ON_SPARK:
             try:
-                return data_convert(data_convert(df, as_type = "pandas"), as_type = "pyspark.pandas")
+                return data_convert(data_convert(df, as_type = PANDAS), as_type = PANDAS_ON_SPARK)
             except:
                 try:
-                    return data_convert(data_convert(df, as_type = "spark"), as_type = "pyspark.pandas")
+                    return data_convert(data_convert(df, as_type = SPARK), as_type = PANDAS_ON_SPARK)
                 except:
                     raise
-        elif as_type.lower() == "koalas":
+        elif as_type.lower() == KOALAS:
             return df
 
     # Pandas
-    elif str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
-        if as_type.lower() == "koalas":
+    elif str(type(df)) == PANDAS_TYPES.get("df"):
+        if as_type.lower() == KOALAS:
             return from_pandas(df) # Pandas to Koalas
-        elif as_type.lower() == "spark":
+        elif as_type.lower() == SPARK:
             # Pandas to Spark
             try:
                 return spark.createDataFrame(df)
             except:
                 return spark.createDataFrame(df.astype(str))
-        elif as_type.lower() in ["pyspark.pandas", "spark.pandas", "ps"]:
+        elif as_type.lower() in IN_PANDAS_ON_SPARK:
             return ps_from_pandas(df)
-        elif as_type.lower() == "pandas":
+        elif as_type.lower() == PANDAS:
             return df
 
     # Spark
-    elif str(type(df)) == "<class 'pyspark.sql.dataframe.DataFrame'>":
-        if as_type.lower() == "pandas":
+    elif str(type(df)) == PYSPARK_TYPES.get("df"):
+        if as_type.lower() == PANDAS:
             return df.toPandas()   # Spark to Pandas
-        elif as_type.lower() == "koalas":
+        elif as_type.lower() == KOALAS:
             return KoalasDataFrame(df)
-        elif as_type.lower() in ["pyspark.pandas", "spark.pandas", "ps"]:
+        elif as_type.lower() in IN_PANDAS_ON_SPARK:
             try:
                 return df.pandas_api()
             except:
@@ -137,13 +140,13 @@ def data_convert(df, as_type: str):
                     return df.to_pandas_on_spark()
                 except:
                     raise
-        elif as_type.lower() == "spark":
+        elif as_type.lower() == SPARK:
             return df
     # Pyspark.pandas
-    elif str(type(df)) == "<class 'pyspark.pandas.frame.DataFrame'>":
-        if as_type.lower() == "pandas":
+    elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
+        if as_type.lower() == PANDAS:
             return df.to_pandas()
-        elif as_type.lower() == "koalas":
+        elif as_type.lower() == KOALAS:
             # No native support for pyspark.pandas to databrick.koalas.
             # This needs to be done by a doble transformation.
             try:
@@ -153,41 +156,41 @@ def data_convert(df, as_type: str):
                     return KoalasDataFrame(df)
                 except:
                     raise
-        elif as_type.lower() == "spark":
+        elif as_type.lower() == SPARK:
             return df.to_spark()
-        elif as_type.lower() in ["pyspark.pandas", "spark.pandas", "ps"]:
+        elif as_type.lower() in IN_PANDAS_ON_SPARK:
             return df
 
 
 def select(df, columns: List[str]):
-    if str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
+    if str(type(df)) == PANDAS_TYPES.get("df"):
         return df[columns]
-    elif str(type(df)) == "<class 'pyspark.sql.dataframe.DataFrame'>":
+    elif str(type(df)) == PYSPARK_TYPES.get("df"):
         return df.select(columns)
-    elif str(type(df)) == "<class 'databricks.koalas.frame.DataFrame'>":
+    elif str(type(df)) == KOALAS_TYPES.get("df"):
         return df[columns]
-    elif str(type(df)) == "<class 'pyspark.pandas.frame.DataFrame'>":
+    elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
         return df[columns]
 
 
 def to_list(df, columns: List[str] = None):
-    if str(type(df)) in ["<class 'databricks.koalas.series.Series'", "<class 'pandas.core.series.Series'", "<class 'pyspark.sql.column.Column'", "<class 'pyspark.pandas.series.Series'"]:
-        if str(type(df)) == "<class 'databricks.koalas.series.Series'":
+    if str(type(df)) in [KOALAS_TYPES.get("series"), PANDAS_TYPES.get("series"), PYSPARK_TYPES.get("series"), PANDAS_ON_SPARK_TYPES.get("series")]:
+        if str(type(df)) == KOALAS_TYPES.get("series"):
             return df.to_list()
-        elif str(type(df)) == "<class 'pandas.core.series.Series'":
+        elif str(type(df)) == PANDAS_TYPES.get("series"):
             return df.to_list()
-        elif str(type(df)) == "<class 'pyspark.sql.column.Column'":
+        elif str(type(df)) == PYSPARK_TYPES.get("series"):
             return df.rdd.flatMap(lambda x: x).collect()
-        elif str(type(df)) == "<class 'pyspark.pandas.series.Series'":
+        elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("series"):
             return df.to_list()
-    elif str(type(df)) in ["<class 'databricks.koalas.frame.DataFrame'>", "<class 'pandas.core.frame.DataFrame'>", "<class 'pyspark.sql.dataframe.DataFrame'>", "<class 'pyspark.pandas.frame.DataFrame'>"]:
+    elif str(type(df)) in [KOALAS_TYPES.get("df"), PANDAS_TYPES.get("df"), PYSPARK_TYPES.get("df"), PANDAS_ON_SPARK_TYPES.get("df")]:
         if not isinstance(columns, list):
             columns = [columns]
-        if str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
+        if str(type(df)) == PANDAS_TYPES.get("df"):
             return list(map(lambda column: df[column].to_list(), columns))
-        elif str(type(df)) == "<class 'pyspark.sql.dataframe.DataFrame'>":
+        elif str(type(df)) == PYSPARK_TYPES.get("df"):
             return df.select(columns).rdd.flatMap(lambda x: x).collect()
-        elif str(type(df)) == "<class 'databricks.koalas.frame.DataFrame'>":
+        elif str(type(df)) == KOALAS_TYPES.get("df"):
             return list(map(lambda column: df[column].to_list(), columns))
-        elif str(type(df)) == "<class 'pyspark.pandas.frame.DataFrame'>":
+        elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
             return list(map(lambda column: df[column].to_list(), columns))

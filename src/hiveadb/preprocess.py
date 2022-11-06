@@ -4,6 +4,73 @@ from pandas import DataFrame, concat
 from typing import List
 from .functions import get_spark, get_dbutils, data_convert, to_list
 
+##### NUMERIC FUNCTIONS #####
+def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite: bool = False):
+    engine = df_type(df)
+    method = method.lower()
+    if engine == PANDAS or engine == KOALAS or engine == PANDAS_ON_SPARK:
+        if not columns:
+            s = df.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all())
+            if engine == KOALAS or engine == PANDAS_ON_SPARK:
+                columns = list(s[s].index.to_numpy())
+            else:
+                columns = list(s[s].index)
+            
+        if not isinstance(columns, list):
+            columns = [columns]
+            
+        df = df.copy()
+
+        print(columns)
+        if method in ["max_abs", "max-abs", "max abs", "maximum_absolute", "maximum-absolute","maximum absolute"]:
+            for column in columns:
+                if overwrite:
+                    df[column] = df[column]  / df[column].abs().max()
+                else:
+                    df[f"{column}_norm"] = df[column]  / df[column].abs().max()
+        elif method in ["min_max", "min-max", "min max"]:
+            for column in columns:
+                if overwrite:
+                    df[column] = (df[column] - df[column].min()) / (df[column].max() - df[column].min())
+                else:
+                    df[f"{column}_norm"] = (df[column] - df[column].min()) / (df[column].max() - df[column].min())
+        elif method in ["z-score"]:
+            for column in columns:
+                if overwrite:
+                    df[column] = (df[column] - df[column].mean()) / df[column].std()
+                else:
+                    df[f"{column}_norm"] = (df[column] - df[column].mean()) / df[column].std()
+    elif engine == PYSPARK:
+        if not columns:
+            columns = list()
+            for column in df.columns:
+                if df.select(column, df[column].cast("int").isNotNull().alias("Value")).select("Value").distinct().collect()[0]["Value"] == True and df.select(column, df[column].cast("int").isNotNull().alias("Value")).select("Value").distinct().count() == 1:
+                    columns.append(column)
+        if not isinstance(columns, list):
+            columns = [columns]
+        df = df.alias('copy')
+        if method in ["max_abs", "max-abs", "max abs", "maximum_absolute", "maximum-absolute","maximum absolute"]:
+            for column in columns:
+                if overwrite:
+                    df = df.withColumn(column, (df[column] / df.select(smax(sabs(df[column])).alias("abs-max")).collect()[0]["abs-max"]).alias(f"{column}_normalized"))
+                else:
+                    df = df.withColumn(f"{column}_norm", (df[column] / df.select(smax(sabs(df[column])).alias("abs-max")).collect()[0]["abs-max"]).alias(f"{column}_normalized"))
+        elif method in ["min_max", "min-max", "min max"]:
+            for column in columns:
+                if overwrite:
+                    df = df.withColumn(column, ( (df[column] - df.select(smin(df[column]).alias("min")).collect()[0]["min"]) / ((df.select(smax(df[column]).alias("max")).collect()[0]["max"]) - (df.select(smin(df[column]).alias("min") )).collect()[0]["min"])).alias(f"{column}_normalized"))
+                else:
+                    df = df.withColumn(f"{column}_norm", ( (df[column] - df.select(smin(df[column]).alias("min")).collect()[0]["min"]) / ((df.select(smax(df[column]).alias("max")).collect()[0]["max"]) - (df.select(smin(df[column]).alias("min") )).collect()[0]["min"])).alias(f"{column}_normalized"))
+        elif method in ["z-score"]:
+            for column in columns:
+                if overwrite:
+                    df = df.withColumn(column, ((df[column] - (df.select(_mean(df[column]).alias("mean")).collect()[0]["mean"])) / (df.select(_stddev(df[column]).alias("std")).collect()[0]["std"])).alias(f"{column}_normalized"))
+                else:
+                    df = df.withColumn(f"{column}_norm", ((df[column] - (df.select(_mean(df[column]).alias("mean")).collect()[0]["mean"])) / (df.select(_stddev(df[column]).alias("std")).collect()[0]["std"])).alias(f"{column}_normalized"))
+
+    return df
+
+##### TEXT FUNCTIONS #####
 def text_similarity(df, columns: List[str], method: str = "tfid", threshold: float = 0.95, overwrite: bool = False, engine: str = "cosine"):
     def cosine_similarity(documents: List[str], header: bool = True, engine="tfid", i:int = 0):
         if engine == "count":

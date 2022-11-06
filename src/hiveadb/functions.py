@@ -93,9 +93,9 @@ def mount(storage:     str,
         list(map(lambda mount_name: __mount(mount_name), mounts))
 
 
-def data_convert(df, as_type: str):
+def data_convert_test(df, as_type: str):
     # Koalas
-    if str(type(df)) == KOALAS_TYPES.get("df"):
+    if df_type(df) == KOALAS:
         if as_type.lower() == PANDAS:
             return df.to_pandas()  # Koalas to Pandas
         elif as_type.lower() == SPARK:
@@ -112,7 +112,7 @@ def data_convert(df, as_type: str):
             return df
 
     # Pandas
-    elif str(type(df)) == PANDAS_TYPES.get("df"):
+    elif df_type(df) == PANDAS:
         if as_type.lower() == KOALAS:
             return from_pandas(df) # Pandas to Koalas
         elif as_type.lower() == SPARK:
@@ -127,7 +127,7 @@ def data_convert(df, as_type: str):
             return df
 
     # Spark
-    elif str(type(df)) == PYSPARK_TYPES.get("df"):
+    elif df_type(df) == PYSPARK:
         if as_type.lower() == PANDAS:
             return df.toPandas()   # Spark to Pandas
         elif as_type.lower() == KOALAS:
@@ -142,8 +142,9 @@ def data_convert(df, as_type: str):
                     raise
         elif as_type.lower() == SPARK:
             return df
+        
     # Pyspark.pandas
-    elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
+    elif df_type(df) == PANDAS_ON_SPARK:
         if as_type.lower() == PANDAS:
             return df.to_pandas()
         elif as_type.lower() == KOALAS:

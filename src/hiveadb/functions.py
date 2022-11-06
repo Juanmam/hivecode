@@ -195,3 +195,14 @@ def to_list(df, columns: List[str] = None):
             return list(map(lambda column: df[column].to_list(), columns))
         elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
             return list(map(lambda column: df[column].to_list(), columns))
+
+            
+def df_type(df):
+    if str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
+        return "pandas"
+    elif str(type(df)) == "<class 'pyspark.sql.dataframe.DataFrame'>":
+        return "spark"
+    elif str(type(df)) == "<class 'databricks.koalas.frame.DataFrame'>":
+        return "koalas"
+    elif str(type(df)) == "<class 'pyspark.pandas.frame.DataFrame'>":
+        return "ps"

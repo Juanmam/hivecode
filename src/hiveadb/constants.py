@@ -21,6 +21,8 @@ SPARK_TYPES = {
     "series": "<class 'pyspark.sql.column.Column'>"
 }
 
+PYSPARK = SPARK
+
 PYSPARK_TYPES = SPARK_TYPES
 
 KOALAS_TYPES = {

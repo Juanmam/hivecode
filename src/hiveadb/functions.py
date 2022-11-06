@@ -1,5 +1,4 @@
-from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS,\ 
-SPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
 
 from typing import List
 from tqdm import tqdm
@@ -196,7 +195,7 @@ def to_list(df, columns: List[str] = None):
         elif str(type(df)) == PANDAS_ON_SPARK_TYPES.get("df"):
             return list(map(lambda column: df[column].to_list(), columns))
 
-            
+
 def df_type(df):
     if str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
         return "pandas"

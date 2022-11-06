@@ -1,8 +1,9 @@
+from .functions import get_spark, get_dbutils, data_convert, to_list, df_type
+
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from pandas import DataFrame, concat
 from typing import List
-from .functions import get_spark, get_dbutils, data_convert, to_list
 
 ##### NUMERIC FUNCTIONS #####
 def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite: bool = False):

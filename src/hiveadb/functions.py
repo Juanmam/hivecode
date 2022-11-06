@@ -198,10 +198,10 @@ def to_list(df, columns: List[str] = None):
 
 def df_type(df):
     if str(type(df)) == "<class 'pandas.core.frame.DataFrame'>":
-        return "pandas"
+        return PANDAS
     elif str(type(df)) == "<class 'pyspark.sql.dataframe.DataFrame'>":
-        return "spark"
+        return PYSPARK
     elif str(type(df)) == "<class 'databricks.koalas.frame.DataFrame'>":
-        return "koalas"
+        return KOALAS
     elif str(type(df)) == "<class 'pyspark.pandas.frame.DataFrame'>":
-        return "ps"
+        return PANDAS_ON_SPARK

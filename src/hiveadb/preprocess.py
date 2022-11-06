@@ -1,6 +1,7 @@
 from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
 from .functions import get_spark, get_dbutils, data_convert, to_list, df_type
 
+from pyspark.sql.functions import abs as sabs, max as smax, min as smin, mean as _mean, stddev as _stddev, count as scount
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from pandas import DataFrame, concat

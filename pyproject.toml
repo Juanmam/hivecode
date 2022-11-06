@@ -4,7 +4,7 @@ description = "Hivecode is a series of libraries desgined to make programming le
 version = "0.0.0.7.0"
 requires-python = ">=3.8.0"
 authors = [
-    { name = "Juan Manuel Mejía Botero", email = "juanmam941025@gmail.com" }
+    {name = "Juan Manuel Mejía Botero", author-email="juanmam941025@gmail.com"}
 ]
 
 [project.optional-dependencies]

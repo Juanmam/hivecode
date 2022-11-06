@@ -92,7 +92,7 @@ def mount(storage:     str,
         list(map(lambda mount_name: __mount(mount_name), mounts))
 
 
-def data_convert_test(df, as_type: str):
+def data_convert(df, as_type: str):
     # Koalas
     if df_type(df) == KOALAS:
         if as_type.lower() == PANDAS:

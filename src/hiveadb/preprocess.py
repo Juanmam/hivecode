@@ -1,7 +1,30 @@
 from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
 from .functions import get_spark, get_dbutils, data_convert, to_list, df_type
 
-from pyspark.sql.functions import abs as sabs, max as smax, min as smin, mean as _mean, stddev as _stddev, count as scount
+spark   = get_spark()
+dbutils = get_dbutils()
+
+from numpy import median as _median
+from scipy.stats import mode as _mode
+
+# Pandas
+from pandas import DataFrame, concat, to_numeric
+
+# Pyspark.Pandas
+from pyspark.pandas import DataFrame as ps_DataFrame, from_pandas as ps_from_pandas
+
+# Pyspark
+from pyspark.sql import Window
+from pyspark.sql.types import StringType
+
+# Koalas
+from databricks.koalas import from_pandas
+
+from typing import List
+from os import system
+
+
+from pyspark.sql.functions import abs as sabs, max as smax, min as smin, mean as _mean, stddev as _stddev, count as scount, first, last
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from pandas import DataFrame, concat
@@ -72,6 +95,116 @@ def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite:
                     df = df.withColumn(f"{column}_norm", ((df[column] - (df.select(_mean(df[column]).alias("mean")).collect()[0]["mean"])) / (df.select(_stddev(df[column]).alias("std")).collect()[0]["std"])).alias(f"{column}_normalized"))
 
     return df
+
+
+def replace_nas(df, columns: List[str] = None, method: str = "mean"):
+    engine = df_type(df)
+    if not columns:
+        if engine == KOALAS or engine == PANDAS_ON_SPARK:
+            s = df.apply(lambda s: to_numeric(s, errors='coerce').notnull().all())
+            columns = list(set(list(s[s].index.to_numpy())))
+        elif engine == PANDAS:
+            s = df.apply(lambda s: to_numeric(s, errors='coerce').notnull().all())
+            columns = list(s[s].index)
+        elif engine == PYSPARK:
+            columns = df.columns
+    if method == "mean":
+        if engine == KOALAS or engine == PANDAS_ON_SPARK:
+            for column in df.columns:
+                df[column] = df[column].fillna(df[column].mean())
+        elif engine == PANDAS:
+            df[columns] = df[columns].fillna(df.mean())
+        elif engine == PYSPARK:
+            for column in columns:
+                mean = df.select(_mean(df[column]).alias("mean")).collect()[0]["mean"]
+                df = df.na.fill(value=mean)
+    if method == "median":
+        if engine == KOALAS or engine == PANDAS_ON_SPARK:
+            for column in df.columns:
+                median = df[column].median()
+                df[column] = df[column].fillna(value=median)
+        elif engine == PANDAS:
+            df[columns] = df[columns].fillna(df.median())
+        elif engine == PYSPARK:
+            for column in columns:
+                median = _median(edf.select(column).na.drop().rdd.map(lambda r: r[0]).collect())
+                df = df.na.fill(value=median)
+    if method == "mode":
+        if engine == KOALAS or engine == PANDAS_ON_SPARK:
+            for column in df.columns:
+                df[column] = df[column].fillna(df[column].mode()[0])
+        elif engine == PANDAS:
+            df[columns] = df[columns].fillna(df.mode())
+        elif engine == PYSPARK:
+            for column in columns:
+                mode = (_mode(edf.select(column).na.drop().rdd.map(lambda r: r[0]).collect())[0][0]).item()
+                df   = df.na.fill(value=mode)
+    if method == "ffill" or method == "pad":
+        if engine in IN_PANDAS_ON_SPARK:
+            from pyspark.pandas import config as ps_config
+            spark.conf.set('spark.sql.execution.arrow.enabled', 'true')
+            ps_config.set_option('compute.ops_on_diff_frames', True)
+        elif engine in KOALAS:
+            from databricks.koalas import config as koalas_config
+            koalas_config.set_option('compute.ops_on_diff_frames', True)
+        if engine == KOALAS or engine == PANDAS_ON_SPARK or engine == PANDAS:
+            for column in columns:
+                df[column] = df[column].ffill()
+        if engine == PYSPARK:
+            for column in columns:
+                w_forward = Window.partitionBy().orderBy(column).rowsBetween(Window.unboundedPreceding,Window.currentRow)
+                w_backward = Window.partitionBy().orderBy(column).rowsBetween(Window.currentRow,Window.unboundedFollowing)
+                df = df.withColumn(column,last(column,ignorenulls=True).over(w_forward))\
+                  .withColumn(column,first(column,ignorenulls=True).over(w_backward))
+    if method == "bfill" or method == "backfill":
+        if engine in IN_PANDAS_ON_SPARK:
+            from pyspark.pandas import config as ps_config
+            spark.conf.set('spark.sql.execution.arrow.enabled', 'true')
+            ps_config.set_option('compute.ops_on_diff_frames', True)
+        elif engine in KOALAS:
+            from databricks.koalas import config as koalas_config
+            koalas_config.set_option('compute.ops_on_diff_frames', True)
+        if engine == KOALAS or engine == PANDAS_ON_SPARK or engine == PANDAS:
+            for column in columns:
+                df[column] = data_convert(data_convert(df, as_type = PANDAS).bfill(), as_type = engine)[column]
+        if engine == PYSPARK:
+            for column in columns:
+                w_forward = Window.partitionBy().orderBy(column).rowsBetween(Window.unboundedPreceding,Window.currentRow)
+                w_backward = Window.partitionBy().orderBy(column).rowsBetween(Window.currentRow,Window.unboundedFollowing)
+                df = df.withColumn(column,first(column,ignorenulls=True).over(w_backward))\
+                    .withColumn(column,last(column,ignorenulls=True).over(w_forward))
+    if method == "interpolate":
+        if engine in IN_PANDAS_ON_SPARK:
+            from pyspark.pandas import config as ps_config
+            ps_config.set_option('compute.ops_on_diff_frames', True)
+        elif engine in KOALAS:
+            from databricks.koalas import config as koalas_config
+            koalas_config.set_option('compute.ops_on_diff_frames', True)
+        if engine == KOALAS:
+            for column in df.columns:
+                df[column] = data_convert(data_convert(df, as_type = PANDAS)[column].interpolate(), as_type = engine)
+        if engine == PANDAS_ON_SPARK:
+            spark.conf.set('spark.sql.execution.arrow.enabled', 'true')
+            for column in df.columns:
+                df[column] = data_convert(data_convert(df, as_type = PANDAS).interpolate(), as_type = engine)[column]
+        elif engine == PANDAS:
+            df[columns] = df[columns].interpolate()
+        if engine == PYSPARK:
+            # CURRENT IMPLEMENTATION IS JUST TRYING TO BRUTE FORCE A PANDAS IMPLEMENTATION, TOO LAZY TO WORK THIS AROUND.
+            try:
+                for column in df.columns:
+                    df = df.unionByName(data_convert(data_convert(df.select(column), as_type=PANDAS).interpolate(), as_type=PYSPARK), allowMissingColumns=True)
+                    df.drop(column)
+                    df.withColumnRenamed(f"{column}_t", column)
+            except:
+                raise
+    if method == "drop":
+        if engine == KOALAS or engine == PANDAS_ON_SPARK or engine == PANDAS:
+            df = df.dropna()
+        if engine == PYSPARK:
+            df = df.na.drop()
+    return df
+
 
 ##### TEXT FUNCTIONS #####
 def text_similarity(df, columns: List[str], method: str = "tfid", threshold: float = 0.95, overwrite: bool = False, engine: str = "cosine"):
@@ -301,3 +434,75 @@ def text_similarity(df, columns: List[str], method: str = "tfid", threshold: flo
             return df[0]
         else:
             return df
+
+
+def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, as_type: str = None, engine: str = None):
+    if not isinstance(columns, list):
+        columns = [columns]
+    
+    original_type = df_type(df)
+    original_columns = df.columns
+    
+    if engine == None:
+        engine = original_type 
+    df = data_convert(df, engine)
+        
+    if encoder in ["categorical", "string"]:
+        for column in columns:
+            if engine == PANDAS or engine == KOALAS or engine in IN_PANDAS_ON_SPARK:
+                if engine in IN_PANDAS_ON_SPARK:
+                    from pyspark.pandas import config as ps_config
+                    ps_config.set_option("compute.max_rows", None)
+                elif engine in KOALAS:
+                    from databricks.koalas import config as koalas_config
+                    koalas_config.set_option("compute.max_rows", None)
+                df[column] = df[column].astype("category")
+                if overwrite:
+                    df[column] = df[column].cat.codes
+                else:
+                    df[f"{column}_encoded"] = df[column].cat.codes
+            elif engine == PYSPARK:
+                from pyspark.ml.feature import StringIndexer
+                from pyspark.sql.functions import col
+                if overwrite:
+                    df = df.withColumn(column, df[column].cast(StringType()))
+                    indexer = StringIndexer(inputCol=column, outputCol=f"{column}_encoded")
+                    indexer_fitted = indexer.fit(df)
+                    df = indexer_fitted.transform(df).drop(column).withColumnRenamed(f"{column}_encoded", column).withColumn(column,col(column).cast("int")).select(original_columns)
+                else:
+                    df = df.withColumn(column, df[column].cast(StringType()))
+                    indexer = StringIndexer(inputCol=column, outputCol=f'{column}_encoded')
+                    indexer_fitted = indexer.fit(df)
+                    df = indexer_fitted.transform(df).withColumn(f"{column}_encoded",col(f"{column}_encoded").cast("int"))
+    elif encoder in ["onehot", "one-hot", "one hot"]:
+        for column in columns:
+            if engine == PANDAS or engine == KOALAS or engine in IN_PANDAS_ON_SPARK:
+                if engine in IN_PANDAS_ON_SPARK:
+                    raise NotImplementedError("Current version doesn't support this opperation for pyspark.pandas.")
+                    from pyspark.pandas import config as ps_config
+                    ps_config.set_option("compute.max_rows", None)
+                elif engine in KOALAS:
+                    raise NotImplementedError("Current version doesn't support this opperation for databricks.koalas.")
+                    from databricks.koalas import config as koalas_config
+                    koalas_config.set_option("compute.max_rows", None)
+                df[column] = df[column].astype("category")
+                uniques = len(df["firstName"].unique()) - 1
+                if overwrite:
+                    df[column] = df[column].cat.codes
+                    df[column] = df[column].apply(lambda category: (uniques, [category], [1.0]))
+                else:
+                    df[f"{column}_encoded"] = df[column].cat.codes
+                    df[f"{column}_encoded"] = df[f"{column}_encoded"].apply(lambda category: (uniques, [category], [1.0]))
+            if engine == PYSPARK:
+                from pyspark.ml.feature import OneHotEncoder, StringIndexer
+                from pyspark.sql.functions import col
+                df = df.withColumn(column, df[column].cast(StringType()))
+                encoder = OneHotEncoder(inputCols=[f'{column}_encoded'], outputCols=[f'{column}_onehot'])
+                indexer = StringIndexer(inputCol=column, outputCol=f'{column}_encoded')
+                indexer_fitted = indexer.fit(df)
+                df = indexer_fitted.transform(df).withColumn(f"{column}_encoded",col(f"{column}_encoded").cast("int"))
+                df = encoder.fit(df).transform(df).drop(f'{column}_encoded')
+    if as_type:
+        return data_convert(df, as_type)
+    else:
+        return data_convert(df, original_type)

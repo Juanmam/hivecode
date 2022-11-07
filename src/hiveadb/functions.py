@@ -1,4 +1,4 @@
-from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK, IN_PYSPARK
 
 from typing import List
 from tqdm import tqdm
@@ -97,7 +97,7 @@ def data_convert(df, as_type: str):
     if df_type(df) == KOALAS:
         if as_type.lower() == PANDAS:
             return df.to_pandas()  # Koalas to Pandas
-        elif as_type.lower() == SPARK:
+        elif as_type.lower() in IN_PYSPARK:
             return df.to_spark()   # Koalas to Spark
         elif as_type.lower() in IN_PANDAS_ON_SPARK:
             try:
@@ -114,7 +114,7 @@ def data_convert(df, as_type: str):
     elif df_type(df) == PANDAS:
         if as_type.lower() == KOALAS:
             return from_pandas(df) # Pandas to Koalas
-        elif as_type.lower() == SPARK:
+        elif as_type.lower() in IN_PYSPARK:
             # Pandas to Spark
             try:
                 return spark.createDataFrame(df)
@@ -139,7 +139,7 @@ def data_convert(df, as_type: str):
                     return df.to_pandas_on_spark()
                 except:
                     raise
-        elif as_type.lower() == SPARK:
+        elif as_type.lower() in IN_PYSPARK:
             return df
         
     # Pyspark.pandas
@@ -156,7 +156,7 @@ def data_convert(df, as_type: str):
                     return KoalasDataFrame(df)
                 except:
                     raise
-        elif as_type.lower() == SPARK:
+        elif as_type.lower() in IN_PYSPARK:
             return df.to_spark()
         elif as_type.lower() in IN_PANDAS_ON_SPARK:
             return df

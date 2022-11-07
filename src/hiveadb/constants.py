@@ -3,6 +3,7 @@ KOALAS = "koalas"
 SPARK  = "pyspark"
 PANDAS_ON_SPARK = "pandas_on_spark"
 
+IN_PYSPARK = [SPARK, "spark"]
 IN_PANDAS_ON_SPARK = [PANDAS_ON_SPARK, "pyspark.pandas", "ps"]
 
 PANDAS_TYPES = {

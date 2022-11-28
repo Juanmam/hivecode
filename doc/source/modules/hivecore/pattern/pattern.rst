@@ -1,5 +1,5 @@
-Tools
-=====
+Pattern
+=======
 
 .. toctree::
     :maxdepth: 1

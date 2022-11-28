@@ -1,5 +1,5 @@
-from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
-from .functions import get_spark, get_dbutils, data_convert, to_list, df_type
+from hivecore.constant import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+from hiveadb.function import get_spark, get_dbutils, data_convert, to_list, df_type
 
 from pyspark.ml.stat import Correlation
 from pyspark.ml.feature import VectorAssembler
@@ -9,7 +9,7 @@ from numpy import triu, ones_like
 from matplotlib.pyplot import figure
 from typing import List
 
-def correlation(df, columns: List[str], method: str = "pearson", heatmap: bool = False, full_matrix: bool = True):
+def correlation(df, columns: List[str], method: str = "pearson", as_heatmap: bool = False, full_matrix: bool = True):
     """
     method {‘pearson’, ‘kendall’, ‘spearman’}
     """
@@ -32,8 +32,8 @@ def correlation(df, columns: List[str], method: str = "pearson", heatmap: bool =
         matrix = Correlation.corr(df_vector, vector_col, method = method).collect()[0][0] 
         corr_matrix = matrix.toArray().tolist() 
         corr_matrix_df = DataFrame(data=corr_matrix, columns = columns, index= columns)
-    if heatmap:
-        figure(figsize=(16,5))  
+    if as_heatmap:
+        figure(figsize=(16,5))
         
         mask = triu(ones_like(corr_matrix_df, dtype=bool))
         cmap = diverging_palette(230, 20, as_cmap=True)
@@ -42,7 +42,7 @@ def correlation(df, columns: List[str], method: str = "pearson", heatmap: bool =
                 xticklabels=corr_matrix_df.columns.values,
                 yticklabels=corr_matrix_df.columns.values, annot=True, mask = mask, cmap=cmap)
         else:
-                        return heatmap(corr_matrix_df, 
+            return heatmap(corr_matrix_df, 
                 xticklabels=corr_matrix_df.columns.values,
                 yticklabels=corr_matrix_df.columns.values, annot=True, cmap=cmap)
     else:

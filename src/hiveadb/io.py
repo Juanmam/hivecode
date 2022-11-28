@@ -1,24 +1,19 @@
-from .functions import get_spark, get_dbutils, data_convert
-from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
-
-# Azure
-from azure.cosmos import CosmosClient, PartitionKey
+from hiveadb.function import get_spark, get_dbutils, data_convert
+from hivecore.constant import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+from hivecore.function import lib_required
+from hivecore.decorator import deprecated
 
 # Data
+lib_required("databricks.koalas")
 from databricks.koalas import read_excel as koalas_read_excel, read_delta as koalas_read_delta, read_table as koalas_read_table,\
 read_json as koalas_read_json, read_csv as koalas_read_csv, read_parquet as koalas_read_parquet, read_orc as koalas_read_orc,\
 read_sql as koalas_read_sql
 from pyspark.pandas import read_delta as ps_read_delta, read_table as ps_read_table, read_orc as ps_read_orc, \
 read_sql_query
-from pandas import DataFrame, ExcelWriter, read_csv as pandas_read_csv, read_json as pandas_read_json, read_parquet as pandas_read_parquet,\
+from pandas import DataFrame, concat, ExcelWriter, read_csv as pandas_read_csv, read_json as pandas_read_json, read_parquet as pandas_read_parquet,\
 read_excel as pandas_read_excel, read_orc as pandas_read_orc
 from os import system, path as ospath
 from py4j.protocol import Py4JJavaError
-from native.decorators import deprecated
-
-# SSH, SCP
-from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
 
 from functools import lru_cache
 
@@ -516,6 +511,9 @@ def write_orc(df, file_name: str, path: str, source: str = "dbfs", mode = "overw
 
 # Cosmos
 def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type: str = KOALAS, engine: str = PANDAS, threads: int = 2):
+    # Azure
+    lib_required("azure-cosmos")
+    from azure.cosmos import CosmosClient, PartitionKey
     def read_cosmos_f(endpoint: str, key: str, database: str, container: str, as_type: str = KOALAS, engine: str = PANDAS):
         # CLIENT CONNECT
         client    = CosmosClient(endpoint, credential=key)
@@ -539,6 +537,9 @@ def read_cosmos(endpoint: str, key: str, database: str, container: str, as_type:
 
 
 def write_cosmos(df, endpoint: str, key: str, database: str, container: str, unique_keys: str = None, id: str = 'id', threads: int = 2):
+    # Azure
+    lib_required("azure-cosmos")
+    from azure.cosmos import CosmosClient, PartitionKey
     if not isinstance(df, list):
         df = [df]
         
@@ -641,13 +642,62 @@ def read_avro(file_name: str, path: str, source: str = "dbfs", as_type: str = KO
         return read_avro_f(file_name, path, source, as_type, engine)
 
 
-@deprecated("Current version is not tested, not recommended for use.")
+# COMTRADE
+def read_comtrade(file_name_cfg: str, path_cfg: str, file_name_dat: str, path_dat: str, source: str = "dbfs", return_mode: str = 'all'):
+    # We make sure comtrade is installed, if not we will force install it.
+    lib_required('comtrade')
+    from comtrade import Comtrade
+    # We read the comtrade with all posible combinations of .cfg and .dat
+    rec = Comtrade()
+    try:
+        rec.load(f'/{source}/{path_cfg}/{file_name_cfg.split(".")[0]}.cfg', f'/{source}/{path_dat}/{file_name_dat.split(".")[0]}.dat')
+    except:
+        try:
+            rec.load(f'/{source}/{path_cfg}/{file_name_cfg.split(".")[0]}.cfg', f'/{source}/{path_dat}/{file_name_dat.split(".")[0]}.DAT')
+        except:
+            try:
+                rec.load(f'/{source}/{path_cfg}/{file_name_cfg.split(".")[0]}.CFG', f'/{source}/{path_dat}/{file_name_dat.split(".")[0]}.dat')
+            except:
+                try:
+                    rec.load(f'/{source}/{path_cfg}/{file_name_cfg.split(".")[0]}.CFG', f'/{source}/{path_dat}/{file_name_dat.split(".")[0]}.DAT')
+                except:
+                    raise
+
+    # We capture analog variables
+    df_analog = [DataFrame({"time": rec.time.tolist()})]
+    df_analog = [*df_analog, *list(map(lambda i: DataFrame({rec.analog_channel_ids[i]: rec.analog[i].tolist()}), range(len(rec.analog))))]
+    df_analog = concat(df_analog, axis = 1)
+    time = df_analog.time.copy()
+    timestep = df_analog.mode().time
+    del(time)
+    df_analog.set_index("time", inplace=True)
+
+    # We capture digital variables
+    df_digital = [DataFrame({"time": rec.time.tolist()})]
+    df_digital = [*df_digital, *list(map(lambda i: DataFrame({rec.status_channel_ids[i]: rec.status[i].tolist()}), range(len(rec.status))))]
+    df_digital = concat(df_digital, axis = 1)
+    df_digital.set_index("time", inplace=True)
+    
+    if return_mode == "analog":
+        return df_analog
+    elif return_mode == "digital":
+        return df_digital
+    elif return_mode == "signals":
+        return df_analog, df_digital
+    elif return_mode == "all":
+        return df_analog, df_digital, {"station_name": rec.station_name, "frequency": rec.frequency, "start_timestamp": rec.start_timestamp, "trigger_timestamp": rec.trigger_timestamp, "timestep": timestep}
+    else:
+        raise Exception(f"Parameter return_mode only accepts 'analog', 'digital' or 'all', but '' was given.")
+
+
+@deprecated("Current version not supported.")
 def write_avro():
     return
-
 # File Transfer
 @lru_cache(maxsize=None)
 def createSSHClient(server: str, port: str, user: str, password: str):
+    lib_required('paramiko')
+    from paramiko import SSHClient, AutoAddPolicy
     client = SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(AutoAddPolicy())
@@ -656,6 +706,9 @@ def createSSHClient(server: str, port: str, user: str, password: str):
 
 
 def transfer_file(file_name: str, path: str, fs_path: str = "/FileStore/tables/", server: str = None, port: str = None, user: str = None, password: str = None) -> None:
+    lib_required('scp')
+    from scp import SCPClient
+    
     # BUILD SSH AND SCP CONNECTIONS
     ssh = createSSHClient(server, port, user, password)
     scp = SCPClient(ssh.get_transport())

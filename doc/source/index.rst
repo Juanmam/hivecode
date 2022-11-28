@@ -13,10 +13,18 @@ Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Modules:
+   :titlesonly:
+   
+   modules/hivecore/hivecore
 
-   modules/native/decorators/decorators
-   modules/native/tools/tools
-   modules/hiveadb/io/io
-   modules/hiveadb/functions/functions
-   modules/hiveadb/preprocess/preprocess
+.. toctree::
+   :titlesonly:
+   :maxdepth: 2
+
+   modules/hiveadb/hiveadb
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 2
+
+   modules/hivesignal/hivesignal

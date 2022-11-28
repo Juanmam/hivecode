@@ -1,5 +1,5 @@
-from .constants import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
-from .functions import get_spark, get_dbutils, data_convert, to_list, df_type
+from hivecore.constant import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK
+from hiveadb.function import get_spark, get_dbutils, data_convert, to_list, df_type
 
 spark   = get_spark()
 dbutils = get_dbutils()
@@ -22,8 +22,6 @@ from databricks.koalas import from_pandas
 
 from typing import List
 from os import system
-
-
 from pyspark.sql.functions import abs as sabs, max as smax, min as smin, mean as _mean, stddev as _stddev, count as scount, first, last
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -36,7 +34,7 @@ def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite:
     method = method.lower()
     if engine == PANDAS or engine == KOALAS or engine == PANDAS_ON_SPARK:
         if not columns:
-            s = df.apply(lambda s: pd.to_numeric(s, errors='coerce').notnull().all())
+            s = df.apply(lambda s: to_numeric(s, errors='coerce').notnull().all())
             if engine == KOALAS or engine == PANDAS_ON_SPARK:
                 columns = list(s[s].index.to_numpy())
             else:
@@ -103,11 +101,14 @@ def replace_nas(df, columns: List[str] = None, method: str = "mean"):
         if engine == KOALAS or engine == PANDAS_ON_SPARK:
             s = df.apply(lambda s: to_numeric(s, errors='coerce').notnull().all())
             columns = list(set(list(s[s].index.to_numpy())))
+            df = df.copy()
         elif engine == PANDAS:
             s = df.apply(lambda s: to_numeric(s, errors='coerce').notnull().all())
             columns = list(s[s].index)
+            df = df.copy()
         elif engine == PYSPARK:
             columns = df.columns
+            df = df.alias("_copy")
     if method == "mean":
         if engine == KOALAS or engine == PANDAS_ON_SPARK:
             for column in df.columns:
@@ -361,7 +362,12 @@ def text_similarity(df, columns: List[str], method: str = "tfid", threshold: flo
                         return list(_df[_df.columns.to_list()[0]].nlargest(2).tail(1).index)[0]
                     else:
                         return list(_df[_df.columns.to_list()[0]].nlargest(2).head(1).index)[0]
-    df = df.copy()
+
+    if df_type(df) in [PANDAS, KOALAS, PANDAS_ON_SPARK]:
+        df = df.copy()
+    elif df_type(df) == PYSPARK:
+        df = df.alias("_copy")
+
     if engine == "cosine_similarity" or engine == "cosine similarity" or engine == "cos" or engine == "cosine":
         for col_name, corpus in zip(columns,to_list(df, columns)):
             for i in range(len(corpus)):
@@ -436,20 +442,19 @@ def text_similarity(df, columns: List[str], method: str = "tfid", threshold: flo
             return df
 
 
-def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, as_type: str = None, engine: str = None):
+def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, as_type: str = None):
     if not isinstance(columns, list):
         columns = [columns]
     
-    original_type = df_type(df)
+    engine = df_type(df)
     original_columns = df.columns
-    
-    if engine == None:
-        engine = original_type 
+
     df = data_convert(df, engine)
         
     if encoder in ["categorical", "string"]:
         for column in columns:
             if engine == PANDAS or engine == KOALAS or engine in IN_PANDAS_ON_SPARK:
+                df = df.copy()
                 if engine in IN_PANDAS_ON_SPARK:
                     from pyspark.pandas import config as ps_config
                     ps_config.set_option("compute.max_rows", None)
@@ -462,6 +467,7 @@ def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, a
                 else:
                     df[f"{column}_encoded"] = df[column].cat.codes
             elif engine == PYSPARK:
+                df = df.alias("_copy")
                 from pyspark.ml.feature import StringIndexer
                 from pyspark.sql.functions import col
                 if overwrite:
@@ -485,6 +491,7 @@ def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, a
                     raise NotImplementedError("Current version doesn't support this opperation for databricks.koalas.")
                     from databricks.koalas import config as koalas_config
                     koalas_config.set_option("compute.max_rows", None)
+                df = df.copy()
                 df[column] = df[column].astype("category")
                 uniques = len(df["firstName"].unique()) - 1
                 if overwrite:
@@ -496,6 +503,7 @@ def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, a
             if engine == PYSPARK:
                 from pyspark.ml.feature import OneHotEncoder, StringIndexer
                 from pyspark.sql.functions import col
+                df = df.alias("_copy")
                 df = df.withColumn(column, df[column].cast(StringType()))
                 encoder = OneHotEncoder(inputCols=[f'{column}_encoded'], outputCols=[f'{column}_onehot'])
                 indexer = StringIndexer(inputCol=column, outputCol=f'{column}_encoded')
@@ -505,4 +513,4 @@ def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, a
     if as_type:
         return data_convert(df, as_type)
     else:
-        return data_convert(df, original_type)
+        return data_convert(df, engine)

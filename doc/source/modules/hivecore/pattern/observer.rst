@@ -3,7 +3,7 @@ Observer
 
 .. role:: method
 
-hivecode.native.tools. :method:`Observer()`
+hivecore.pattern. :method:`Observer()`
 
     An Observer pattern implementation. It includes a
     setter, a getter and a delete method to manipulate
@@ -21,11 +21,12 @@ Example
 ^^^^^^^
 In this example we will check out how to access values defined in one scope from another.
 In this case, we are accessing values inside a lambda and setting values inside a lambda.
+
 ..  code-block:: python
     
     from nltk.sentiment import SentimentIntensityAnalyzer
 
-    from hivecode.native.tools import Observer
+    from hivecore.pattern import Observer
 
     Observer().set("sentiment_analizer", SentimentIntensityAnalyzer())
     Observer().set("indicator", 0)

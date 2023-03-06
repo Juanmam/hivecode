@@ -4,7 +4,7 @@ Sphinx
 insipid-sphinx-theme
 flake8==3.9.2
 tox==3.24.3
-pytest==6.2.5
+pytest==7.2.2
 pytest-cov==2.12.1
 mypy===0.910
 openpyxl==3.0.10

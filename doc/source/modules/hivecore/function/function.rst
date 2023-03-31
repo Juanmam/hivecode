@@ -3,8 +3,11 @@ Function
 
 The hivecore.functions module includes multiple functions for your everyday.
 
+.. automodule:: hivecore.function
+
 .. toctree::
     :maxdepth: 1
 
-    check_library
     lib_required
+    check_library
+    to_list

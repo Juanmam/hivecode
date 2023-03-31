@@ -8,23 +8,23 @@ and more of an engineering task. It includes functions, decorators and multiple 
 desgiined to make the implementation of development and analytical proyects more oriented
 to desigin and architecture and less of an implementation hell.
 
-Documentation
-^^^^^^^^^^^^^
-
 .. toctree::
-   :maxdepth: 2
+   :hidden:
    :titlesonly:
+   :maxdepth: 3
    
    modules/hivecore/hivecore
 
 .. toctree::
    :titlesonly:
+   :hidden:
    :maxdepth: 2
 
    modules/hiveadb/hiveadb
 
 .. toctree::
    :titlesonly:
+   :hidden:
    :maxdepth: 2
 
    modules/hivesignal/hivesignal

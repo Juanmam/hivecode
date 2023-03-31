@@ -1,6 +1,8 @@
 Pattern
 =======
 
+.. automodule:: hivecore.pattern
+
 .. toctree::
     :maxdepth: 1
 

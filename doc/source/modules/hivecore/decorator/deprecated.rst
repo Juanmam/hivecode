@@ -1,16 +1,8 @@
 Deprecated
 ==========
 
-.. role:: method
-.. role:: param
-
-hivecore.decorator. :method:`deprecated` (:param:`reason: str`)
-
-Defines when a callable is deprecated. This will give a warning telling the user that the function is not the best for the case.
-
-Parameters
-^^^^^^^^^^
-* reason: Message you want to display to the user.
+.. autofunction:: hivecore.decorator.deprecated
+   :noindex:
 
 Basic Example
 ^^^^^^^^^^^^^

@@ -6,14 +6,27 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'hivecode'
-copyright = '2022, Juan Manuel Mejía Botero'
-author = 'Juan Manuel Mejía Botero'
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('../../src'))
+#sys.path.insert(0, os.path.abspath('../../src/hiveadb'))
+
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc']
+extensions = [
+    'sphinx.ext.autodoc'
+]
+
+#autodoc_mock_imports = [
+#    'hivecore'
+#]
+
+project = 'hivecode'
+copyright = '2022, Juan Manuel Mejía Botero'
+author = 'Juan Manuel Mejía Botero'
 
 templates_path = ['_templates']
 exclude_patterns = []

@@ -1,16 +1,8 @@
 lib_required
 ============
 
-.. role:: method
-.. role:: param
-
-hivecore.function. :method:`lib_required` (:param:`lib_name: str`)
-
-Checks if a library is installed and tries to install it if it's not.
-
-Parameters
-^^^^^^^^^^
-* lib_name: The name of the library as a string.
+.. autofunction:: hivecore.function.lib_required
+   :noindex:
 
 Example
 ^^^^^^^

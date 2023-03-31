@@ -1,12 +1,11 @@
 paramiko==2.11.0
 scp==0.14.4
-sklearn==0.24.1
+scikit-learn==0.24.1
 azure-cosmos==4.3.0
 openpyxl==3.0.10
 tqdm==4.64.1
-scipy==1.6.2
+scipy==1.10.0
 matplotlib==3.4.2
 numpy==1.20.1
 pandas==1.2.4
 seaborn==0.11.1
-koalas

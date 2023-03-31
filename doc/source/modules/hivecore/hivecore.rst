@@ -3,8 +3,8 @@ Hivecore
 
 .. toctree::
    :titlesonly:
+   :hidden:
    :maxdepth: 2
-   :caption: Modules
 
    decorator/decorator
    function/function

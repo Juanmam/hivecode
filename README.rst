@@ -1,5 +1,19 @@
+.. |PyPI version Hivecode| image:: https://img.shields.io/pypi/v/hivecode.svg
+   :target: https://pypi.org/project/hivecode/
+
+.. |Documentation Status| image:: https://readthedocs.org/projects/hivecode/badge/?version=latest
+   :target: http://hivecode.readthedocs.io/?badge=latest
+
+.. |MIT license| image:: https://img.shields.io/badge/License-MIT-blue.svg
+   :target: https://lbesson.mit-license.org/
+
+.. |PyPI license| image:: https://img.shields.io/pypi/l/hivecode.svg
+   :target: https://pypi.org/project/hivecode/
+
 Hivecode
 ========
+|PyPI version Hivecode| |Documentation Status| |MIT license|
+
 Hivecode is a Python library designed as a toolkit for data engineering and data science. The library includes a collection of useful functions and tools for reading, mounting, and storing data in Azure DataBricks. Hivecode also includes patterns, decorators, and analytics tools to help make your data processing workflow more efficient and streamlined. With Hivecode, you can simplify your data engineering and analysis tasks, freeing up your time to focus on more strategic work. Whether you're a data engineer, data analyst, or data scientist, Hivecode has something to offer.
 
 Packages

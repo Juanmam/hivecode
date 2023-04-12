@@ -1,12 +1,8 @@
 Read Excel
 ==========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_excel` (:param:`file_name: str, path: str, source: str, as_type: str, header: bool, engine: str, threads: int`)
-
-    Reads a Excel file from dbfs into a Koalas DataFrame.
+.. autofunction:: hiveadb.io.read_excel
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

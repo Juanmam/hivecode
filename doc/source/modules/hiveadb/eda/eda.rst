@@ -5,6 +5,8 @@ EDA
     functions designed to perform fast Exploratory
     Data Analysis.
 
+    .. automodule:: hiveadb.eda
+
 .. toctree::
     :maxdepth: 1
     

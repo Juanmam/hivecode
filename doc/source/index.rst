@@ -16,15 +16,15 @@ to desigin and architecture and less of an implementation hell.
    modules/hivecore/hivecore
 
 .. toctree::
-   :titlesonly:
    :hidden:
-   :maxdepth: 2
+   :titlesonly:
+   :maxdepth: 3
 
    modules/hiveadb/hiveadb
 
 .. toctree::
-   :titlesonly:
    :hidden:
-   :maxdepth: 2
+   :titlesonly:
+   :maxdepth: 3
 
    modules/hivesignal/hivesignal

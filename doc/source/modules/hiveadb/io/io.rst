@@ -1,11 +1,10 @@
 IO
 ==
 
-    The hivecode.hiveadv.io module include multiple
-    functions designed for reading and writing data
-    into multiple sources.
+.. automodule:: hiveadb.io
 
 .. toctree::
+    :hidden:
     :maxdepth: 1
     
     read_table

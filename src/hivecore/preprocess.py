@@ -18,9 +18,9 @@ from pyspark.sql import Window
 from pyspark.sql.types import StringType
 
 # Koalas
-from databricks.koalas import from_pandas
+from databricks.koalas import from_pandas, DataFrame as KoalasDataFrame
 
-from typing import List
+from typing import List, Union
 from os import system
 from pyspark.sql.functions import abs as sabs, max as smax, min as smin, mean as _mean, stddev as _stddev, count as scount, first, last
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine_similarity
@@ -28,8 +28,33 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from pandas import DataFrame, concat
 from typing import List
 
+import pandas
+import pyspark
+import databricks.koalas
+
 ##### NUMERIC FUNCTIONS #####
-def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite: bool = False):
+def normalize(df: Union[pandas.DataFrame, databricks.koalas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame], 
+              columns: List[str] = None, 
+              method: str = "max-abs", 
+              overwrite: bool = False) -> Union[pandas.DataFrame, databricks.koalas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]:
+    """
+    Normalize the values in the specified columns of a DataFrame using a given normalization method.
+
+    :param df: A DataFrame object to normalize.
+    :type df: Union[pandas.DataFrame, databricks.koalas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+
+    :param columns: A list of column names to normalize. If None, normalize all columns.
+    :type columns: List[str]
+
+    :param method: The normalization method to use. Default is "max-abs".
+    :type method: str
+
+    :param overwrite: If True, overwrite the original values in the DataFrame with the normalized values.
+    :type overwrite: bool
+
+    :return: A DataFrame object with the normalized values. If overwrite is True, return the same DataFrame object.
+    :rtype: Union[pandas.DataFrame, databricks.koalas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+    """
     engine = df_type(df)
     method = method.lower()
     if engine == PANDAS or engine == KOALAS or engine == PANDAS_ON_SPARK:
@@ -45,7 +70,6 @@ def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite:
             
         df = df.copy()
 
-        print(columns)
         if method in ["max_abs", "max-abs", "max abs", "maximum_absolute", "maximum-absolute","maximum absolute"]:
             for column in columns:
                 if overwrite:
@@ -95,7 +119,24 @@ def normalize(df, columns: List[str] = None, method: str = "max-abs", overwrite:
     return df
 
 
-def replace_nas(df, columns: List[str] = None, method: str = "mean"):
+def replace_nas(df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame],
+                columns: List[str] = None, 
+                method: str = "mean") -> Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]:
+    """
+    Replace missing values (NAs) in the specified columns of a DataFrame with a specified method.
+
+    :param df: The DataFrame to replace NAs in.
+    :type df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+
+    :param columns: The list of columns to replace NAs in. If None, all columns with NAs will be replaced.
+    :type columns: List[str]
+
+    :param method: The method to use for replacing NAs. Available methods are "mean", "median", "mode", "ffill", and "bfill".
+    :type method: str
+
+    :return: The DataFrame with NAs replaced according to the specified method.
+    :rtype: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+    """
     engine = df_type(df)
     if not columns:
         if engine == KOALAS or engine == PANDAS_ON_SPARK:
@@ -208,7 +249,39 @@ def replace_nas(df, columns: List[str] = None, method: str = "mean"):
 
 
 ##### TEXT FUNCTIONS #####
-def text_similarity(df, columns: List[str], method: str = "tfid", threshold: float = 0.95, overwrite: bool = False, engine: str = "cosine"):
+def text_similarity(
+    df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame], 
+    columns: List[str], 
+    method: str = "tfid", 
+    threshold: float = 0.95, 
+    overwrite: bool = False, 
+    engine: str = "cosine"
+) -> Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]:
+    """
+    Compute the similarity between strings in the specified dataframe columns.
+
+    :param df: The dataframe whose columns will be used for computing text similarity.
+    :type df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+
+    :param columns: The list of column names whose string values will be compared.
+    :type columns: List[str]
+
+    :param method: The method to use for computing text similarity. Possible values are "tfid" and "count".
+    :type method: str
+
+    :param threshold: The threshold above which two strings are considered similar. Should be a value between 0 and 1.
+    :type threshold: float
+
+    :param overwrite: If True, the original column values will be overwritten with the most similar ones.
+    :type overwrite: bool
+
+    :param engine: The similarity computation engine to use. Possible values are "cosine_similarity", "jaro",
+                   "levenshtein", "damerau_levenshtein", "jaro_winkler", and "hamming".
+    :type engine: str
+
+    :return: A dataframe with the similarity values between strings.
+    :rtype: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+    """
     def cosine_similarity(documents: List[str], header: bool = True, engine="tfid", i:int = 0):
         if engine == "count":
             count_vect = CountVectorizer()
@@ -442,7 +515,32 @@ def text_similarity(df, columns: List[str], method: str = "tfid", threshold: flo
             return df
 
 
-def encode(df, columns, encoder: str = "categorical", overwrite: bool = False, as_type: str = None):
+def encode(df: Union[pandas.DataFrame, KoalasDataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame], 
+           columns: List[str], 
+           encoder: str = "categorical", 
+           overwrite: bool = False,
+           as_type: str = None) -> Union[pandas.DataFrame, KoalasDataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]:
+    """
+    Encodes columns in a dataframe using various encoders.
+
+    :param df: A Pandas, Koalas, PySpark DataFrame or PySpark Koalas DataFrame to encode.
+    :type df: Union[pandas.DataFrame, KoalasDataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+
+    :param columns: The names of the columns to encode.
+    :type columns: List[str]
+
+    :param encoder: The encoding method to use, Possible values are "categorical" or "onehot". defaults to "categorical".
+    :type encoder: str, optional
+
+    :param overwrite: If True, overwrites the original columns with the encoded values, defaults to False.
+    :type overwrite: bool, optional
+
+    :param as_type: The data type to convert the encoded columns to, defaults to None.
+    :type as_type: str, optional
+
+    :return: A Pandas, Koalas, PySpark DataFrame or PySpark Koalas DataFrame with the encoded columns.
+    :rtype: Union[pandas.DataFrame, KoalasDataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+    """
     if not isinstance(columns, list):
         columns = [columns]
     

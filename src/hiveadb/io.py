@@ -1,14 +1,18 @@
+"""
+    The io module is designed around makeing reading, writing and transfering data easier in Azure DataBricks.
+"""
+
 ### imports
 # Required to get spark context, dbutils and for data convertion
 from hiveadb.function import get_spark, get_dbutils, data_convert
-
-lib_required("databricks.koalas")
 
 spark   = get_spark()   # Get the spark context
 dbutils = get_dbutils() # Get the dbutils object
 
 # To force install a library that is required if its not installed yet
 from hivecore.function import lib_required
+
+lib_required("databricks.koalas")
 
 # For deprecating old or not implemented functions
 from hivecore.decorator import deprecated
@@ -400,7 +404,7 @@ def read_parquet(file_name: str,
                  source: str = "dbfs", 
                  as_type: str = PANDAS, 
                  engine: str = KOALAS, 
-                 threads: int = 2) -> Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]:
+                 threads: int = 2) -> Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]]:
     """
     Read a Parquet file and convert it to the specified data format.
 
@@ -423,7 +427,7 @@ def read_parquet(file_name: str,
     :type file_name: int
 
     :return: The Parquet file data converted to the specified format(s).
-    :rtype: Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]
+    :rtype: Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]]
     """
     def read_parquet_f(file_name: str, path: str, source: str = "dbfs", as_type: str = KOALAS, engine: str = KOALAS):
         if engine.lower() == KOALAS:
@@ -511,7 +515,7 @@ def read_json(file_name: str,
               source: str = "dbfs", 
               as_type: str = PANDAS, 
               engine: str = KOALAS, 
-              threads: int = 2) -> Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]:
+              threads: int = 2) -> Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]]:
     """
     Read JSON file from a specified path and return a converted data object.
 
@@ -529,7 +533,7 @@ def read_json(file_name: str,
     :type threads: int
 
     :returns: Converted data object(s).
-    :rtype: Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]
+    :rtype: Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame, List[Union[PandasDataFrame, KoalasDataFrame, PysparkDataFrame]]]
     """
     def read_json_f(file_name: str, path: str, source: str = "dbfs", as_type: str = KOALAS, engine: str = KOALAS):
         if engine == KOALAS:

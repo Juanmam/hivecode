@@ -1,12 +1,8 @@
 Read Cosmos
 ===========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_cosmos` (:param:`endpoint: str, key: str, database: str, container: str, as_type: str, engine: str, threads: int`)
-
-    Reads a Cosmos container into a DataFrame.
+.. autofunction:: hiveadb.io.read_cosmos
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

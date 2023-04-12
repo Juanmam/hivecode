@@ -1,21 +1,8 @@
 Observer
 ========
 
-.. role:: method
-
-hivecore.pattern. :method:`Observer()`
-
-    An Observer pattern implementation. It includes a
-    setter, a getter and a delete method to manipulate
-    data inside the Observer.
-
-Methods
-^^^^^^^
-=================================================  ================================================
-:doc:`set(key, val) <methods/observer_set>`        Stores a value in the Observer with a key.      
-:doc:`get(key) <methods/observer_get>`             Returns the value from the Observer given a key.
-:doc:`delete(key) <methods/observer_delete>`       Deletes the (key,value) from the observer.      
-=================================================  ================================================
+.. autoclass:: hivecore.pattern.Observer
+    :members: set, get, delete
 
 Example
 ^^^^^^^

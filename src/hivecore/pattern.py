@@ -13,8 +13,10 @@ class Observer:
 
         :param key: Name of the attribute to create/modify.
         :type key: str
+
         :param val: Value of the attribute to create/modify.
         :type val: Any
+        
         :return: None
         :rtype: None
         """
@@ -26,6 +28,7 @@ class Observer:
 
         :param key: Name of the attribute you want to fetch.
         :type key: str
+        
         :return: The value stored in the attribute.
         :rtype: Any
         """
@@ -37,6 +40,7 @@ class Observer:
 
         :param key: Name of the attribute to remove.
         :type key: str
+        
         :return: None
         :rtype: None
         """

@@ -1,12 +1,8 @@
 Write JSON
 ==========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_json` (:param:`df, file_name: str, path: str, num_files: int, threads: int`)
-
-    Writes a JSON file from a DataFrame into the file system.
+.. autofunction:: hiveadb.io.write_cosmos
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

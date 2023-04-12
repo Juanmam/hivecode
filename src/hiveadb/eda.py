@@ -7,11 +7,38 @@ from seaborn import diverging_palette, heatmap
 from pandas import DataFrame, to_numeric
 from numpy import triu, ones_like
 from matplotlib.pyplot import figure
-from typing import List
+from typing import List, Union
+from databricks.koalas import DataFrame as KoalasDataFrame
 
-def correlation(df, columns: List[str], method: str = "pearson", as_heatmap: bool = False, full_matrix: bool = True):
+import pandas
+import pyspark
+
+def correlation(df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame], 
+                columns: List[str], method: str = "pearson", 
+                as_heatmap: bool = False, full_matrix: bool = True) -> Union[DataFrame, None]:
     """
-    method {‘pearson’, ‘kendall’, ‘spearman’}
+    Calculates the correlation matrix between the given columns of a DataFrame.
+    
+    :param df: A DataFrame object, can be a Koalas, Pandas, PySpark, or PySpark Pandas DataFrame.
+    :type df: Union[KoalasDataFrame, pandas.DataFrame, pyspark.sql.DataFrame, pyspark.pandas.DataFrame]
+    
+    :param columns: A list of column names to compute the correlation between.
+    :type columns: List[str]
+    
+    :param method: The correlation method to use, must be one of "pearson", "kendall", or "spearman". 
+                   Defaults to "pearson".
+    :type method: str
+    
+    :param as_heatmap: If True, a heatmap of the correlation matrix will be displayed. Defaults to False.
+    :type as_heatmap: bool
+    
+    :param full_matrix: If True, the full correlation matrix will be displayed. If False, only the 
+                        lower triangle of the matrix will be displayed. Defaults to True.
+    :type full_matrix: bool
+    
+    :return: If as_heatmap is True, None is returned and a heatmap is displayed. Otherwise, a Pandas DataFrame
+             containing the correlation matrix is returned.
+    :rtype: Union[pandas.DataFrame, None]
     """
     engine = df_type(df)
     if engine == PANDAS or engine == KOALAS or engine == PANDAS_ON_SPARK:

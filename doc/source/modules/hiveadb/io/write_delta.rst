@@ -1,12 +1,8 @@
 Write Delta
 ===========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_delta` (:param:`df, file_name: str, path: str, source: str, mode: str, threads: int`)
-
-    Writes a Delta file from a DataFrame into the file system.
+.. autofunction:: hiveadb.io.write_delta
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

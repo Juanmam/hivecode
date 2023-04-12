@@ -5,8 +5,8 @@ Hivesignal is a package designed for signal analysis and manipulation. A signal 
 
 .. toctree::
    :titlesonly:
-   :maxdepth: 1
-   :caption: Modules
+   :hidden:
+   :maxdepth: 2
 
    io/io
    transform/transform

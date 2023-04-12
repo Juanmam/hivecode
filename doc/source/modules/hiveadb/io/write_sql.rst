@@ -1,12 +1,8 @@
 Write SQL
 =========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_sql` (:param:`df, table_name: str, database: str, server: str, port: str, user: str, password: str, sql_type: str, cert: str, engine: str, threads: int`)
-
-    Writes into a SQL table from a DataFrame using JDBC.
+.. autofunction:: hiveadb.io.write_sql
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

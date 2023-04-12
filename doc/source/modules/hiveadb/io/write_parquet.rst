@@ -1,12 +1,8 @@
 Write Parquet
 =============
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_parquet` (:param:`df, file_name: str, path: str, mode: str, num_files: int, threads: int`)
-
-    Writes a Parquet file from a DataFrame into the file system.
+.. autofunction:: hiveadb.io.write_parquet
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

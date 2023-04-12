@@ -1,12 +1,8 @@
 Correlation
 ===========
 
-.. role:: method
-.. role:: param
-
-hiveadb.eda. :method:`correlation` ( :param:`df, columns: List[str], method: str, as_heatmap: bool, full_matrix: bool`)
-
-    Returns a correlation matrix. Can return it as a Pandas DataFrame or as a Seaborn heatmap.
+.. autofunction:: hiveadb.eda.correlation
+   :noindex:
 
 Parameters
 ^^^^^^^^^^

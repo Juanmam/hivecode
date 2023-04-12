@@ -1,12 +1,8 @@
 Read SQL
 ========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_sql` (:param:`table_name: str, db: str, sql_type: str, as_type: str, engine: str, threads: int`)
-
-    Reads a Table from a JDBC DB into a Koalas DataFrame. Can be configured to return a Pandas DataFrame.
+.. autofunction:: hiveadb.io.read_sql
+   :noindex:
 
 .. note::
     

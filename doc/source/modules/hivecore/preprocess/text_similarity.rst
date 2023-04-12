@@ -1,12 +1,8 @@
 Text Similarity
 ===============
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.preprocess. :method:`text_similarity` ( :param:`df: Union[databricks.koalas.frame.DataFrame, pandas.core.frame.DataFrame, pyspark.sql.dataframe.DataFrame], columns: List[str], method: str, threshold: float, overwrite: bool, engine: str`)
-
-    Given a DataFrame, a set of columns and a threshold to compare similarity, it will find similar lables in the data. If overwrite is set to True, it will write the lables over the original column.
+.. autofunction:: hivecore.preprocess.text_similarity
+   :noindex:
 
 Parameters
 ^^^^^^^^^^

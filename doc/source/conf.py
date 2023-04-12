@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath('../../src'))
 #sys.path.insert(0, os.path.abspath('../../src/hiveadb'))
 
 
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -20,9 +21,14 @@ extensions = [
     'sphinx.ext.autodoc'
 ]
 
-#autodoc_mock_imports = [
-#    'hivecore'
-#]
+
+autodoc_mock_imports = [
+   'collections',
+   'dbruntime',
+   'databricks',
+   'databricks.koalas',
+   'seaborn'
+]
 
 project = 'hivecode'
 copyright = '2022, Juan Manuel Mejía Botero'

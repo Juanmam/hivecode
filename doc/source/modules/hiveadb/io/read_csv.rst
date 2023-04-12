@@ -1,12 +1,8 @@
 Read CSV
 ========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_csv` (:param:`file_name: str, path: str, source: str, as_type: str, engine: str, threads: int`)
-
-    Reads a CSV file from dbfs into a Koalas DataFrame.
+.. autofunction:: hiveadb.io.read_csv
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,12 +1,8 @@
 Write ORC
 =============
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_orc` (:param:`df, file_name: str, path: str, source: str, mode: str, num_files: int, threads: int`)
-
-    Writes a ORC file from a DataFrame into the file system.
+.. autofunction:: hiveadb.io.write_orc
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

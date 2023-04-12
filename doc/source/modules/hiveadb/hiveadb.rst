@@ -1,12 +1,13 @@
 Hiveadb
 =======
 
+Hiveadb is desgined with Azure Databricks in mind, to make working in the cloud a walk in the park. 
+
 .. toctree::
    :titlesonly:
+   :hidden:
    :maxdepth: 2
-   :caption: Modules
 
    io/io
    function/function
-   preprocess/preprocess
    eda/eda

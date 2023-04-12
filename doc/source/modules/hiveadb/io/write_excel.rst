@@ -1,12 +1,8 @@
 Write Excel
 ===========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`write_excel` (:param:`df, file_name: str, path: str, source: str, extension: str, sheet_name: List[str], threads: int`)
-
-    Writes a Excel file from a DataFrame into the file system.
+.. autofunction:: hiveadb.io.write_excel
+   :noindex:
 
 Write Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^

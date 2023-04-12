@@ -1,12 +1,8 @@
 Data Convert
 ============
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.functions. :method:`data_convert` ( :param:`df: Union[databricks.koalas.frame.DataFrame, pandas.core.frame.DataFrame, pyspark.sql.dataframe.DataFrame], as_type: str`)
-
-    Converts a DataFrame from Pandas, Koalas or Spark into any of the other variants.
+.. autofunction:: hiveadb.function.data_convert
+   :noindex:
 
 Parameters
 ^^^^^^^^^^

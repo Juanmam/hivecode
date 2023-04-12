@@ -1,12 +1,8 @@
 Read Avro
 =========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_avro` (:param:`file_name: str, path: str, source: str, as_type: str, engine: str, threads: int`)
-
-    Reads a Avro file from dbfs into a Koalas DataFrame.
+.. autofunction:: hiveadb.io.read_avro
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,12 +1,8 @@
 Read Delta
 ==========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_delta` (:param:`file_name: str, path: str, source: str, as_type: str, engine: str, threads: int`)
-
-    Reads a Delta file from dbfs into a Koalas DataFrame. Can be configured to return a Pandas DataFrame.
+.. autofunction:: hiveadb.io.read_delta
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

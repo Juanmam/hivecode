@@ -1,12 +1,8 @@
 Read ORC
 ========
 
-.. role:: method
-.. role:: param
-
-hivecode.hiveadb.io. :method:`read_orc` (:param:`file_name: str, path: str, source: str, as_type: str, engine: str, threads: int`)
-
-    Reads an ORC file from dbfs into a Koalas DataFrame. Can be configured to return a Pandas DataFrame.
+.. autofunction:: hiveadb.io.read_orc
+   :noindex:
 
 Read Single File Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

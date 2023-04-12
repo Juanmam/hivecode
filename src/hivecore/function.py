@@ -11,6 +11,7 @@ def to_list(value: Union[list, Series, Column]) -> List:
 
     :param value: The input that needs to be transformed into a list.
     :type value: Any
+    
     :return: A list with the elements from the object.
     :rtype: List
     """
@@ -33,6 +34,7 @@ def check_library(lib_name: str):
     
     :param lib_name: The name of the library to check for.
     :type lib_name: str
+    
     :return: A boolean indicating whether the library is installed.
     :rtype: bool
     """
@@ -52,6 +54,7 @@ def lib_required(lib_name: str):
     
     :param lib_name: The name of the library to check for and install if necessary.
     :type lib_name: str
+    
     :return: None.
     :rtype: None
     """

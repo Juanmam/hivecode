@@ -15,3 +15,4 @@ The hivecore.decorator module includes multiple decorators that can be used to e
     retry
     rate_limit
     deprecated
+    single_use

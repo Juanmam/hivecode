@@ -1,7 +1,9 @@
 import pydoc
 from os import system
 
-from typing import Union, List
+import hashlib
+import uuid
+from typing import Union, Optional, List
 from pandas import Series
 from pyspark.sql.column import Column
 
@@ -72,3 +74,43 @@ def lib_required(lib_name: str):
                         pass
                         # raise Exception(f"Could not install {lib_name}")
                 pass
+
+
+def generate_key(seed: int, charset: Optional[str] = "alphanumeric") -> str:
+    """
+    Generates a random key based on the given seed and character set.
+    
+    :param seed: The seed value used to generate the key.
+    :type seed: int
+    
+    :param charset: The character set to use for the key. Default is alphanumeric.
+                    Supported values are: numeric, alpha, alphanumeric, all.
+    :type charset: Optional[str]
+    
+    :return: A randomly generated key based on the given seed and character set.
+    :rtype: str
+    
+    :raises ValueError: If an invalid charset is provided.
+    """
+    # Define character set based on the given charset
+    if charset == "numeric":
+        chars = "0123456789"
+    elif charset == "alpha":
+        chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    elif charset == "alphanumeric":
+        chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    elif charset == "all":
+        chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$#@&-+()/*:;!?"
+    else:
+        raise ValueError("Invalid charset.")
+        
+    # Generate hash bytes using the seed value
+    seed_str = str(seed).encode('utf-8')
+    hash_bytes = hashlib.md5(seed_str).digest()
+    
+    # Generate UUID using the hash bytes and node value, then format and return the key
+    namespace = uuid.UUID(int=uuid.getnode()).hex
+    random_uuid = str(uuid.uuid5(uuid.UUID(bytes=hash_bytes), namespace)).replace('-', '')
+    key = ''.join(c for c in random_uuid if c in chars)
+    
+    return key

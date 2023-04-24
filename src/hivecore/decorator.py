@@ -4,7 +4,7 @@ import warnings
 
 from functools import wraps
 from time import time, sleep, perf_counter
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any, Callable
 
 """
 The hivecore.decorator module includes multiple decorators that can be used to enhance classes and functions.
@@ -219,3 +219,46 @@ def deprecated( reason: str = None ):
         return new_func2
     else:
         raise TypeError(repr(type(reason)))
+
+
+def single_use(seed: Any, key_param: str = "key") -> Callable:
+    """
+    A decorator that can be used to ensure that a function can only be called once with a specific key.
+
+    :param seed: A seed value used for generating unique keys.
+    :type seed: Any
+    :param key_param: The name of the parameter that holds the key value.
+    :type key_param: str
+    :return: A decorator function that wraps the input function.
+    :rtype: Callable
+    """
+    used_keys = set()
+
+    def decorator(func: Callable) -> Callable:
+        """
+        This function is a decorator that wraps the input function with additional functionality.
+
+        :param func: The function to be wrapped.
+        :type func: Callable
+        :return: The wrapped function.
+        :rtype: Callable
+        """
+        def wrapper(*args, **kwargs):
+            """
+            This function is a wrapper that checks if the key has already been used before executing the input function.
+
+            :param args: Positional arguments passed to the input function.
+            :type args: tuple
+            :param kwargs: Keyword arguments passed to the input function. It must contain the key parameter.
+            :type kwargs: dict
+            :raises ValueError: If the key is invalid or has already been used.
+            :return: The result of the input function.
+            :rtype: Any
+            """
+            key = kwargs.get(key_param)
+            if not key or key in used_keys:
+                raise ValueError("Invalid key or key already used.")
+            used_keys.add(key)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator

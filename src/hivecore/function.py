@@ -7,6 +7,21 @@ from typing import Union, Optional, List
 from pandas import Series
 from pyspark.sql.column import Column
 
+def add_two(value_a: int, value_b: int) -> int:
+    """
+    Add two integer values together and return the result.
+
+    :param value_a: The first integer value to be added.
+    :type value_a: int
+    
+    :param value_b: The second integer value to be added.
+    :type value_b: int
+    
+    :return: The sum of the two input values.
+    :rtype: int
+    """
+    return value_a + value_b
+
 def to_list(value: Union[list, Series, Column]) -> List:
     """
     Transform an input into a list.

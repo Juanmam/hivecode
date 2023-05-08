@@ -12,3 +12,4 @@ The hivecore.functions module includes multiple functions for your everyday.
     check_library
     to_list
     generate_key
+    add_two

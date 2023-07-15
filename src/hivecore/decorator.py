@@ -10,25 +10,6 @@ from typing import List, Tuple, Union, Any, Callable
 The hivecore.decorator module includes multiple decorators that can be used to enhance classes and functions.
 """
 
-def singleton( class_: type ) -> object:
-    """
-    A decorator used to turn a class into a Singleton. This makes it so that if a class has already been instanciated one, that instance will be returned instead of a second one.
-
-    :param class_: A class to apply the singleton to. Applied as a Decorator.
-    :type class_: Class
-    :return: Singleton instance of that Class.
-    :rtype: Object
-    """
-    instances = {}
-
-    @wraps(class_)
-    def getinstance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return getinstance
-
 
 def timer(in_milis: bool = True) -> Tuple[any, float]:
     """
@@ -262,3 +243,24 @@ def single_use(seed: Any, key_param: str = "key") -> Callable:
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+@deprecated("Singleton decorator has been moved to hivecore.patterns and will only be available there in future versions.")
+def singleton( class_: type ) -> object:
+    """
+    A decorator used to turn a class into a Singleton. This makes it so that if a class has already been instanciated one, that instance will be returned instead of a second one.
+
+    :param class_: A class to apply the singleton to. Applied as a Decorator.
+    :type class_: Class
+    :return: Singleton instance of that Class.
+    :rtype: Object
+    """
+    instances = {}
+
+    @wraps(class_)
+    def getinstance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return getinstance

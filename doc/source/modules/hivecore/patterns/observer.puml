@@ -1,0 +1,16 @@
+@startuml Observer_Pattern
+package env <<Frame>> {
+    object contextA
+    object contextB
+
+    class Observer {
+        + set(): void
+        + get(): Any
+        + delete(): void
+    }
+
+    contextA --> Observer
+    contextB --> Observer
+}
+
+@enduml

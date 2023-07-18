@@ -1,0 +1,22 @@
+@startuml Composite_Pattern
+abstract class Component {
+    + operation(): void
+    + add(component: Component): void
+    + getChildren(): Component[]
+}
+
+class Leaf {
+    + operation(): void
+}
+
+class Composite {
+    - children: Component[]
+    + operation(): void
+    + add(component: Component): void
+    + getChildren(): Component[]
+}
+
+Component <|-- Leaf
+Component <|-- Composite
+
+@enduml

@@ -1,0 +1,47 @@
+@startuml Factory_Pattern
+interface Factory {
+    + new_instance(): void
+}
+
+interface Product {
+    + new_instance(): void
+}
+
+class FruitProductA {
+    + new_instance(): void
+}
+
+class FruitProductB {
+    + new_instance(): void
+}
+
+class CarProductA {
+    + new_instance(): void
+}
+
+class CarProductB {
+    + new_instance(): void
+}
+
+class CarFactory {
+    + new_instance(): void
+}
+
+class FruitFactory {
+    + new_instance(): void
+}
+
+Product <|.. FruitProductA
+Product <|.. FruitProductB
+Product <|.. CarProductA
+Product <|.. CarProductB
+
+Factory <|.. CarFactory
+Factory <|.. FruitFactory
+
+FruitFactory <-- FruitProductA
+FruitFactory <-- FruitProductB
+CarFactory <-- CarProductA
+CarFactory <-- CarProductB
+
+@enduml

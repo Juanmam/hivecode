@@ -1,0 +1,17 @@
+@startuml Prototype_Pattern
+interface Prototype {
+    + clone(): Prototype
+}
+
+class ConcretePrototypeA {
+    + clone(): ConcretePrototypeA
+}
+
+class ConcretePrototypeB {
+    + clone(): ConcretePrototypeB
+}
+
+Prototype <|.. ConcretePrototypeA
+Prototype <|.. ConcretePrototypeB
+
+@enduml

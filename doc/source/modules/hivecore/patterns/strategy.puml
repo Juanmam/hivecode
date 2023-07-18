@@ -1,0 +1,25 @@
+@startuml Strategy_Pattern
+interface Strategy {
+    + execute(): void
+}
+
+class Context {
+    - strategy: Strategy
+    + set_strategy(strategy: Strategy): void
+    + execute(): void
+}
+
+class ConcreteStrategyA {
+    + execute(): void
+}
+
+class ConcreteStrategyB {
+    + execute(): void
+}
+
+Strategy <|.. ConcreteStrategyA
+Strategy <|.. ConcreteStrategyB
+
+Context o--> Strategy
+
+@enduml

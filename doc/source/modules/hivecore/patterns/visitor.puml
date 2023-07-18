@@ -1,0 +1,35 @@
+@startuml Visitor_Pattern
+interface Visitor {
+    + visit(element: Visitable): void
+}
+
+interface Visitable {
+    + accept(visitor: Visitor): void
+}
+
+class ConcreteVisitableA {
+    + accept(visitor: Visitor): void
+}
+
+class ConcreteVisitableB {
+    + accept(visitor: Visitor): void
+}
+
+class ConcreteVisitorA {
+    + visit(visitable: Visitable): void
+}
+
+class ConcreteVisitorB {
+    + visit(visitable: Visitable): void
+}
+
+Visitor <|.. ConcreteVisitorA
+Visitor <|.. ConcreteVisitorB
+
+Visitable <|.. ConcreteVisitableA
+Visitable <|.. ConcreteVisitableB
+
+ConcreteVisitableA --> Visitor : accept()
+ConcreteVisitableB --> Visitor : accept()
+
+@enduml

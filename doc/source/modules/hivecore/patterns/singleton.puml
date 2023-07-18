@@ -1,0 +1,9 @@
+@startuml Singleton_Pattern
+class Singleton {
+    - instance: Singleton
+    + operation(): void
+}
+
+Singleton "1" --> "1" Singleton : instance
+
+@enduml

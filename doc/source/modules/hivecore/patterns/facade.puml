@@ -1,0 +1,25 @@
+@startuml Facade_Pattern
+class SubsystemA {
+    + operationA(): void
+}
+
+class SubsystemB {
+    + operationB(): void
+}
+
+class SubsystemC {
+    + operationC(): void
+}
+
+class Facade {
+    - subsystemA: SubsystemA
+    - subsystemB: SubsystemB
+    - subsystemC: SubsystemC
+    + operation(): void
+}
+
+SubsystemA --> Facade
+SubsystemB --> Facade
+SubsystemC --> Facade
+
+@enduml

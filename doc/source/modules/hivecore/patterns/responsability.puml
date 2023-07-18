@@ -1,0 +1,26 @@
+@startuml Chain_of_responsability_Pattern
+class Client {
+    + handle_request(request: Request): void
+}
+
+interface Handler {
+    + handle_request(request: Request): void
+}
+
+class ConcreteHandlerA {
+    + handle_request(request: Request): void
+}
+
+class ConcreteHandlerB {
+    + handle_request(request: Request): void
+}
+
+class ConcreteHandlerC {
+    + handle_request(request: Request): void
+}
+
+Client --|> Handler
+Handler <|-- ConcreteHandlerA
+Handler <|-- ConcreteHandlerB
+Handler <|-- ConcreteHandlerC
+@enduml

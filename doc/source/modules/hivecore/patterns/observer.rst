@@ -1,19 +1,19 @@
 Observer
 ========
 
-.. autoclass:: hivecore.pattern.Observer
+.. autoclass:: hivecore.patterns.Observer
     :members: set, get, delete
 
 Example
 ^^^^^^^
-In this example we will check out how to access values defined in one scope from another.
-In this case, we are accessing values inside a lambda and setting values inside a lambda.
+
+In this example we will check out how to access values defined in one scope from another. In this case, we are accessing values inside a lambda and setting values inside a lambda.
 
 ..  code-block:: python
     
     from nltk.sentiment import SentimentIntensityAnalyzer
 
-    from hivecore.pattern import Observer
+    from hivecore.patterns import Observer
 
     Observer().set("sentiment_analizer", SentimentIntensityAnalyzer())
     Observer().set("indicator", 0)

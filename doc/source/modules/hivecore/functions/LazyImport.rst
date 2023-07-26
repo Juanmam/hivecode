@@ -18,7 +18,7 @@ To use the `LazyImport` class, simply call it as follows:
     print(f"Baseline memory usage: {baseline_memory} MB")
 
     # Set up a lazy import with Lazy, but don't actually use the imported object
-    Lazy.import_from("numpy", np="")
+    LazyImport.import_from("numpy", np="")
     setup_memory_lazy = get_memory_usage()
     print(f"Memory usage after setting up lazy import with Lazy: {setup_memory_lazy} MB")
 

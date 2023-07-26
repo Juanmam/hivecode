@@ -1,13 +1,14 @@
 from hivecore.constant import PANDAS_TYPES, PYSPARK_TYPES, KOALAS_TYPES, PANDAS_ON_SPARK_TYPES, PANDAS, KOALAS, SPARK, PYSPARK, PANDAS_ON_SPARK, IN_PANDAS_ON_SPARK, IN_PYSPARK
-from hivecore.function import lib_required
+from hivecore.functions import lib_required, LazyImport
+
+LazyImport.import_from("databricks.koalas", from_pandas = 'from_pandas', KoalasDataFrame = 'DataFrame')
+LazyImport.import_from('pyspark.context',  SparkContext = 'SparkContext')
+LazyImport.import_from('pyspark.context',  SparkContext = 'SparkSession')
+LazyImport.import_from('pyspark.context',  SparkContext = 'SparkSession')
+LazyImport.import_from('pyspark.pandas', ps_from_pandas = 'from_pandas')
 
 from typing import List, Union, Any
 
-# Pyspark
-from pyspark.context import SparkContext
-from pyspark.sql.session import SparkSession
-from pyspark.pandas import from_pandas as ps_from_pandas
-from databricks.koalas import from_pandas, DataFrame as KoalasDataFrame
 
 def get_spark() -> SparkSession:
     """

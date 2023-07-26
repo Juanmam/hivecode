@@ -1,14 +1,14 @@
 generate_key
 ============
 
-.. autofunction:: hivecore.function.generate_key
+.. autofunction:: hivecore.functions.generate_key
    :noindex:
 
 Example
 ^^^^^^^
 ..  code-block:: python
     
-    from hivecore.function import generate_key
+    from hivecore.functions import generate_key
     
     generate_key(1234) #'m0P8A'
     

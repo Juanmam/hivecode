@@ -1,14 +1,14 @@
 to_list
 =======
 
-.. autofunction:: hivecore.function.to_list
+.. autofunction:: hivecore.functions.to_list
    :noindex:
 
 Example
 ^^^^^^^
 ..  code-block:: python
     
-    from hivecore.function import to_list
+    from hivecore.functions import to_list
     from pandas import DataFrame
 
     # Pandas DataFrame

@@ -8,7 +8,7 @@ Hivecore
 
    preprocess/preprocess
    decorator/decorator
-   function/function
+   functions/functions
    patterns/patterns
    visual/visual
    eda/eda

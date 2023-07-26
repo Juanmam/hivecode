@@ -14,15 +14,14 @@ def singleton( class_: type ) -> object:
     :return: Singleton instance of that Class.
     :rtype: Object
     """
+    
     instances = {}
-
-    @wraps(class_)
-    def getinstance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return getinstance
+    class SingletonWrapper(class_):
+        def _new_(cls, *args, **kwargs):
+            if class_ not in instances:
+                instances[class_] = super(SingletonWrapper, cls)._new_(cls)
+            return instances[class_]
+    return SingletonWrapper
 
 
 @singleton

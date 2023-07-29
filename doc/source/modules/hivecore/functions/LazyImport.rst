@@ -14,19 +14,28 @@ To use the `LazyImport` class, simply call it as follows:
     from hivecore.functions import get_memory_usage, LazyImport
 
     # Baseline memory usage
-    baseline_memory = get_memory_usage()
-    print(f"Baseline memory usage: {baseline_memory} MB")
+    print(f"Memory usage 1: {get_memory_usage()} MB")
 
-    # Set up a lazy import with Lazy, but don't actually use the imported object
-    LazyImport.import_from("numpy", np="")
-    setup_memory_lazy = get_memory_usage()
-    print(f"Memory usage after setting up lazy import with Lazy: {setup_memory_lazy} MB")
+    # Define LazyImports
+    lazy_import = LazyImport()
+    lazy_import.from_("numpy", "pi")
+    lazy_import.from_("pandas", "DataFrame", "Series", DataFrame="DF")
 
-    # Use the imported object for the first time
-    np = Lazy.np
-    _ = np.array([1, 2, 3])
-    used_memory_lazy = get_memory_usage()
-    print(f"Memory usage after using the imported object with Lazy: {used_memory_lazy} MB")
+    # No memory change should be observed yet
+    print(f"Memory usage 2: {get_memory_usage()} MB")
+
+    # Numpy should be imported here
+    print("np.pi:", pi)
+    print(f"Memory usage 3: {get_memory_usage()} MB")
+
+    # Type-hinting does not trigger an import but still works
+    x: DF = 5
+    print(f"Memory usage 4: {get_memory_usage()} MB")
+
+    # This should trigger the pandas import
+    print("Series:", Series)
+    print("DataFrame:", DataFrame)
+    print(f"Memory usage 5: {get_memory_usage()} MB")
 
 
 
@@ -37,6 +46,15 @@ The output will vary based on the memory usage of the process. It will display t
 
 .. code-block:: text
 
-    Baseline memory usage: 62.92578125 MB
-    Memory usage after setting up lazy import with Lazy: 62.9296875 MB
-    Memory usage after using the imported object with Lazy: 72.51953125 MB
+    Memory usage 1: 71.3671875 MB
+    Memory usage 2: 71.37109375 MB
+
+    np.pi: 3.141592653589793
+    
+    Memory usage 3: 81.4375 MB
+    Memory usage 4: 81.4375 MB
+    
+    Series: <class 'pandas.core.series.Series'>
+    DataFrame: <class 'pandas.core.frame.DataFrame'>
+    
+    Memory usage 5: 110.8984375 MB

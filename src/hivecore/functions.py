@@ -2,7 +2,7 @@ import pydoc
 from os import system, getpid
 import hashlib
 import uuid
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Any
 from pandas import Series
 from pyspark.sql.column import Column
 from psutil import Process
@@ -23,94 +23,158 @@ def get_memory_usage() -> float:
     return megabytes
 
 
-class LazyMeta(type):
-    """
-    Metaclass for Lazy. Handles attribute access to lazily import modules.
-    """
-    _modules = {}
-    _aliases = {}
 
-    def __getattr__(cls, name):
-        """
-        Overriding __getattr__ to perform lazy import.
-        
-        :param name: Name of the attribute being accessed.
-        :type name: str
-        :return: The requested attribute from the imported module.
-        """
-        if name in cls._aliases:
-            return cls._aliases[name]
-        if name not in cls._modules:
-            cls._modules[name] = import_module(name)
-        return cls._modules[name]
-    
 
 class ImportPromise:
     """
-    A class that promises to import a module when an attribute is accessed.
+    A class that acts as a placeholder for an import.
     """
-    def __init__(self, module_name, alias=None):
+    def __init__(self, module: str, item: Optional[str] = None):
         """
-        Initializes the ImportPromise instance.
+        Initialize the ImportPromise with the module and item names.
         
-        :param module_name: The name of the module to be imported.
-        :type module_name: str
-        :param alias: The specific attribute to import from the module, defaults to None.
-        :type alias: str, optional
+        :param module: The name of the module to be imported.
+        :type module: str
+        :param item: The name of the item to be imported from the module.
+        :type item: str, optional
         """
-        self.module_name = module_name
-        self.alias = alias
-        self._module = None
+        self.module = module
+        self.item = item
+        self._module_obj = None
+        self._item_obj = None
 
-    def __getattr__(self, name):
+    def __get__(self, instance: Any, owner: Any) -> Any:
         """
-        Overriding __getattr__ to perform the import when an attribute is accessed.
+        Perform the import when the attribute is accessed.
         
-        :param name: Name of the attribute being accessed.
+        :param instance: The instance that the attribute was accessed on.
+        :type instance: Any
+        :param owner: The owner class.
+        :type owner: Any
+        :return: The item object if it's defined, otherwise the module object.
+        :rtype: Any
+        """
+        if not self._module_obj:
+            self._module_obj = import_module(self.module)
+        if self.item and not self._item_obj:
+            self._item_obj = getattr(self._module_obj, self.item)
+        return self._item_obj if self._item_obj else self._module_obj
+
+    def __getattribute__(self, name: str) -> Any:
+        """
+        Perform the import and access the attribute on the module or item.
+        
+        :param name: The name of the attribute.
         :type name: str
-        :return: The requested attribute from the imported module.
+        :return: The attribute object.
+        :rtype: Any
         """
-        if self._module is None:
-            self._module = import_module(self.module_name)
-            if self.alias is not None:
-                self._module = getattr(self._module, self.alias)
-        return getattr(self._module, name)
+        if name in ["_module_obj", "module", "item", "_item_obj", "__class__", "__get__"]:
+            return object.__getattribute__(self, name)
+        if not self._module_obj:
+            self._module_obj = import_module(self.module)
 
-    def __call__(self, *args, **kwargs):
+        # Create a new ImportPromise for the attribute.
+        module = self.item if self.item else self.module
+        return ImportPromise(module, name)
+    
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """
-        Overriding __call__ to perform the import when the instance itself is called.
+        Perform the import and call the module or item with the given arguments and keyword arguments.
         
-        :param args: Positional arguments to pass to the called function.
-        :param kwargs: Keyword arguments to pass to the called function.
-        :return: The result of calling the imported function/module.
+        :param args: The positional arguments to pass to the module or item.
+        :type args: Any
+        :param kwargs: The keyword arguments to pass to the module or item.
+        :type kwargs: Any
+        :return: The result of calling the module or item.
+        :rtype: Any
         """
-        if self._module is None:
-            self._module = import_module(self.module_name)
-            if self.alias is not None:
-                self._module = getattr(self._module, self.alias)
-        return self._module(*args, **kwargs)
+        if not self._module_obj:
+            self._module_obj = import_module(self.module)
+        if self.item and not self._item_obj:
+            self._item_obj = getattr(self._module_obj, self.item)
+        obj = self._item_obj if self._item_obj else self._module_obj
+        return obj(*args, **kwargs)
+    
+    def __repr__(self) -> str:
+        """
+        Return a string that represents the ImportPromise instance.
+        
+        :return: A string that represents the ImportPromise instance.
+        :rtype: str
+        """
+        if not self._module_obj:
+            self._module_obj = import_module(self.module)
+        if self.item and not self._item_obj:
+            self._item_obj = getattr(self._module_obj, self.item)
+        obj = self._item_obj if self._item_obj else self._module_obj
+        return repr(obj)
+
+    def __str__(self) -> str:
+        """
+        Return a string that represents the ImportPromise instance.
+        
+        :return: A string that represents the ImportPromise instance.
+        :rtype: str
+        """
+        if not self._module_obj:
+            self._module_obj = import_module(self.module)
+        if self.item and not self._item_obj:
+            self._item_obj = getattr(self._module_obj, self.item)
+        obj = self._item_obj if self._item_obj else self._module_obj
+        return str(obj)
 
 
 @singleton
-class LazyImport(metaclass=LazyMeta):
+class LazyImport:
     """
-    A class for performing lazy imports. Uses LazyMeta as its metaclass and is a singleton. This class generates ImportPromises, a class that actually imports the library when called.
+    A class that performs lazy import.
     """
-    @classmethod
-    def import_from(cls, module_name: str, **aliases) -> None:
+    def __init__(self):
         """
-        Sets up lazy imports for the specified module and aliases.
+        Initialize an empty dictionary to store the ImportPromise instances.
+        """
+        self._imports = {}
+
+    def import_(self, module: str, as_: Optional[str] = None):
+        """
+        Perform a lazy import of a module.
         
-        :param module_name: The name of the module to be imported.
-        :type module_name: str
-        :param aliases: Dictionary of aliases to set up for specific attributes from the module.
+        :param module: The name of the module to be imported.
+        :type module: str
+        :param as_: The name to assign to the module.
+        :type as_: str, optional
         """
-        for alias, attribute_name in aliases.items():
-            promise = ImportPromise(module_name, alias=attribute_name)
-            cls._aliases[alias] = promise
-            if alias in globals():
-                warn(f"Global variable '{alias}' is being overwritten by Lazy")
-            globals()[alias] = promise
+        as_ = as_ if as_ else module
+        if as_ in globals():
+            print(f"Warning: '{as_}' is already defined in the global namespace.")
+            return
+        globals()[as_] = ImportPromise(module)
+        self._imports[as_] = module
+
+    def from_(self, module: str, *args, **kwargs):
+        """
+        Perform a lazy import of items from a module.
+        
+        :param module: The name of the module to be imported from.
+        :type module: str
+        :param args: The names of the items to be imported.
+        :type args: str
+        :param kwargs: The names and aliases of the items to be imported.
+        :type kwargs: str
+        """
+        for arg in args:
+            if arg in globals():
+                print(f"Warning: '{arg}' is already defined in the global namespace.")
+                continue
+            globals()[arg] = ImportPromise(module, arg)
+            self._imports[arg] = (module, arg)
+        for kw, as_ in kwargs.items():
+            if as_ in globals():
+                print(f"Warning: '{as_}' is already defined in the global namespace.")
+                continue
+            globals()[as_] = ImportPromise(module, kw)
+            self._imports[as_] = (module, kw)
 
 
 def to_list(value: Union[list, Series, Column]) -> List:

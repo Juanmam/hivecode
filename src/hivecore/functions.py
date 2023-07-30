@@ -4,12 +4,16 @@ import hashlib
 import uuid
 from typing import Union, Optional, List, Any
 from pandas import Series
-from pyspark.sql.column import Column
 from psutil import Process
-from hivecore.patterns import singleton
 from importlib import import_module
 from warnings import warn
 
+from hivecore.patterns import singleton
+
+from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql.column import Column
+from pyspark.sql.window import Window
+from pyspark.sql.functions import monotonically_increasing_id, row_number
 
 def get_memory_usage() -> float:
     """
@@ -21,8 +25,6 @@ def get_memory_usage() -> float:
     process = Process(getpid())
     megabytes = process.memory_info().rss / (1024 * 1024)
     return megabytes
-
-
 
 
 class ImportPromise:
@@ -284,3 +286,32 @@ def generate_key(seed: int, charset: Optional[str] = "alphanumeric") -> str:
     key = ''.join(c for c in random_uuid if c in chars)
     
     return key
+
+
+def pyspark_concat(left: DataFrame, right: DataFrame, axis: int = 0) -> DataFrame:
+    """
+    Concatenate two PySpark DataFrames along the specified axis.
+
+    :param left: The first PySpark DataFrame.
+    :type left: DataFrame
+    :param right: The second PySpark DataFrame to concatenate with `left`.
+    :type right: DataFrame
+    :param axis: The axis along which the DataFrames will be concatenated. Possible values: 0 or 1. Default is 0.
+    :type axis: int
+
+    :return: The concatenated PySpark DataFrame.
+    :rtype: DataFrame
+
+    :raises ValueError: If an invalid axis is provided.
+    """
+    if axis == 0:
+        return left.union(right)
+    elif axis == 1:
+        # Add a unique ID to each DataFrame to use for joining
+        left = left.withColumn("_row_id", row_number().over(Window.orderBy(monotonically_increasing_id())))
+        right = right.withColumn("_row_id", row_number().over(Window.orderBy(monotonically_increasing_id())))
+
+        # Join
+        return left.join(right, on="_row_id").drop("_row_id")
+    else:
+        raise ValueError("Invalid axis. Use 0 or 1.")

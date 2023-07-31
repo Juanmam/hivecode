@@ -2,6 +2,7 @@ build
 twine
 Sphinx==7.0.1
 sphinx-rtd-theme
+sphinx-copybutton
 flake8==3.9.2
 tox==3.24.3
 pytest==6.2.5

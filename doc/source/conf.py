@@ -16,7 +16,6 @@ plantuml = 'java -jar ./plantuml.jar'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinxcontrib.plantuml',
     'sphinx.ext.autodoc'
 ]
 

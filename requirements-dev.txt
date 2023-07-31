@@ -1,6 +1,6 @@
 build
 twine
-Sphinx
+Sphinx==7.0.0
 insipid-sphinx-theme
 flake8==3.9.2
 tox==3.24.3

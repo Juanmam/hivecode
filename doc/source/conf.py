@@ -16,6 +16,7 @@ plantuml = 'java -jar ./plantuml.jar'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx_copybutton',
     'sphinx.ext.autodoc'
 ]
 

@@ -3,10 +3,7 @@
 Hivecode
 ========
 
-Hivecode is a series of libraries desgined to make programming less of an artisan task 
-and more of an engineering task. It includes functions, decorators and multiple classes
-desgiined to make the implementation of development and analytical proyects more oriented
-to desigin and architecture and less of an implementation hell.
+Hivecode is a versatile and comprehensive Python library, with a focus on efficiency and reusability, Hivecode empowers developers and data enthusiasts alike to streamline their projects. This library boasts a wide array of practical and innovative functions, ranging from seamless integration with Azure Databricks to implementing essential design patterns, data preprocessing, visualization, exploration, and more. Whether you're looking to supercharge your data analysis or accelerate your Python projects, Hivecode is the go-to toolkit for unlocking the full potential of your endeavors.
 
 .. toctree::
    :hidden:

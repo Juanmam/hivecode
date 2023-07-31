@@ -76,7 +76,7 @@ To visit the visitable classes, create instances of both visitable and visitor o
     disk.accept(startup)
 
 Output
-~~~~~~
+------
 
 The output of the above example would be:
 

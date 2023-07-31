@@ -9,5 +9,5 @@ Hiveadb is desgined with Azure Databricks in mind, to make working in the cloud 
    :maxdepth: 2
 
    io/io
-   function/function
+   functions/functions
    eda/eda

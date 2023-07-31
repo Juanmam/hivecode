@@ -8,7 +8,4 @@ Preprocess
 .. toctree::
     :maxdepth: 1
     
-    text_similarity
-    encode
-    normalize
-    replace_nas
+    Encoder

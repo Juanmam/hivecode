@@ -1,6 +1,6 @@
 from typing import List, Union, Any
 
-from hivecore.functions import lib_required
+from hivecore.functions import lib_required, LazyImport
 
 from pyspark.context import SparkContext
 from pyspark.sql.session import SparkSession

@@ -2,7 +2,7 @@ LazyImport
 ==========
 
 .. autoclass:: hivecore.functions.LazyImport
-    :members: import_from
+    :members: import_, from_
 
 Example
 -------

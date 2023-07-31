@@ -1,11 +1,11 @@
-@startuml
+@startuml State_Pattern
 interface State {
     + handle(context: Context): void
 }
 
 class Context {
     - state: State
-    + setState(state: State): void
+    + set_state(state: State): void
     + request(): void
 }
 
@@ -20,9 +20,6 @@ class ConcreteStateB {
 State <|.. ConcreteStateA
 State <|.. ConcreteStateB
 
-Context o--> State : state
-
-Context --> State : setState()
-Context --> State : request()
+Context --> State : state
 
 @enduml

@@ -1,11 +1,9 @@
-from typing import List, Union, AnyOptional, Mapping
+from typing import List, Union, Any, Optional, Mapping
 import requests
 from databricks_api import DatabricksAPI
-from functools import reduce
 from itertools import compress, chain
 from warnings import warn
 
-from hivecore.patterns import singleton
 from hivecore.functions import lib_required, LazyImport
 
 from pyspark.context import SparkContext
@@ -258,7 +256,6 @@ class SecretManager:
         self._databricks_api.secret.delete_scope(scope, headers=headers)
 
 
-@singleton
 class TokenManager:
     """
     TokenManager class handles the management of tokens for Databricks API.

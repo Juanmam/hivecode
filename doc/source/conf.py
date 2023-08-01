@@ -26,7 +26,8 @@ autodoc_mock_imports = [
    'dbruntime',
    'databricks',
    'databricks.koalas',
-   'seaborn'
+   'seaborn',
+   'databricks_api'
 ]
 
 project = 'hivecode'

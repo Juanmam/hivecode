@@ -261,10 +261,10 @@ class TokenManager:
     TokenManager class handles the management of tokens for Databricks API.
 
     :methods:
-    - create_token: Creates a new token with the given token_name and stores it in the token list.
-    - get_token: Retrieves the dictionary of a token based on its name.
-    - delete_token: Deletes a token based on its name.
-    - list_tokens: Retrieves a dictionary containing all the tokens organized by scopes.
+        - create_token: Creates a new token with the given token_name and stores it in the token list.
+        - get_token: Retrieves the dictionary of a token based on its name.
+        - delete_token: Deletes a token based on its name.
+        - list_tokens: Retrieves a dictionary containing all the tokens organized by scopes.
     """
 
     def _init_(self, token: str, token_name: str = "temp_token"):

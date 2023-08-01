@@ -7,3 +7,5 @@ Functions
     :maxdepth: 1
     
     mount
+    SecretManager
+    TokenManager

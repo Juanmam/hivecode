@@ -8,6 +8,4 @@ Hiveadb is desgined with Azure Databricks in mind, to make working in the cloud 
    :hidden:
    :maxdepth: 2
 
-   io/io
    functions/functions
-   eda/eda

@@ -10,5 +10,3 @@ Hivecore
    decorator/decorator
    functions/functions
    patterns/patterns
-   visual/visual
-   eda/eda

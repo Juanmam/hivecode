@@ -16,7 +16,7 @@ plantuml = 'java -jar ./plantuml.jar'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx_copybutton',
+    # 'sphinx_copybutton',
     'sphinx.ext.autodoc'
 ]
 
@@ -43,11 +43,6 @@ language = 'Python'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-
-html_theme_options = {
-    'body_centered': False,
-    'breadcrumbs': True,
-}
 
 html_static_path = ['_static']
 html_css_files = ['css/classes.css']

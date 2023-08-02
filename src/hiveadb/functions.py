@@ -5,6 +5,7 @@ from itertools import compress, chain
 from warnings import warn
 
 from hivecore.functions import lib_required, LazyImport
+import logging
 
 from pyspark.context import SparkContext
 from pyspark.sql.session import SparkSession
@@ -136,7 +137,7 @@ class SecretManager:
         - delete_secret: Delete a secret from a specific scope in Azure Databricks.
         - delete_scope: Delete a secret scope in Azure Databricks.
     """
-    def _init_(self, token: str):
+    def __init__(self, token: str):
         self._token = token
         self.workspace_host = spark.conf.get("spark.databricks.workspaceUrl")
         self._databricks_api = DatabricksAPI(host=self.workspace_host, token=self._token)
@@ -267,7 +268,7 @@ class TokenManager:
         - list_tokens: Retrieves a dictionary containing all the tokens organized by scopes.
     """
 
-    def _init_(self, token: str, token_name: str = "temp_token"):
+    def __init__(self, token: str):
         self._token = token
         self.workspace_host = spark.conf.get("spark.databricks.workspaceUrl")
         self._databricks_api = DatabricksAPI(host=self.workspace_host, token=self._token)
@@ -360,3 +361,81 @@ class TokenManager:
         :rtype: dict
         """
         return self._databricks_api.token.list_tokens()
+
+
+class LibraryManager:
+    """
+    A class to manage libraries on a Databricks cluster.
+
+    :methods:
+        - install: Install a library on the current Databricks cluster.
+        - uninstall: Uninstall a library from the current Databricks cluster.
+    """
+
+    def __init__(self, token: str):
+        """
+        Initialize the Libraries_Manager with the given Databricks API token.
+
+        :param token: The Databricks token to authenticate with the Databricks API.
+        :type token: str
+        """
+        self.host = SparkSession.builder.getOrCreate().conf.get("spark.databricks.workspaceUrl")
+        self._token = token
+        self._databricks_api = DatabricksAPI(host=self.host, token=self._token)
+        self.cluster = SparkSession.builder.getOrCreate().conf.get("spark.databricks.clusterUsageTags.clusterId")
+
+    def install(self, library: str = None, version: str = None, index: str = "pypi"):
+        """
+        Install a library on the current Databricks cluster.
+
+        :param library: The name of the library to install.
+        :type library: str
+        :param version: The version of the library to install. Default is None.
+        :type version: str, optional
+        :param index: The index from which to install the library ('pypi' or 'maven'). Default is 'pypi'.
+        :type index: str, optional
+
+        :raises ValueError: If the specified index is not supported.
+        """
+        if index.lower() == "pypi":
+            library = library if not version else f"{library}=={version}"
+            library_payload = {"package": library}
+        elif index.lower() == "maven":
+            library = library if not version else f"{library}:{version}"
+            library_payload = {"coordinates": library}
+        else:
+            raise ValueError(f"Index '{index}' is not supported.")
+
+        try:
+            self._databricks_api.managed_library.install_libraries(self.cluster, libraries=[{index: library_payload}])
+            logging.info(f"Successfully triggered install '{library}' on cluster {self.cluster}.")
+        except Exception as e:
+            raise Exception(f"Failed to trigger install '{library}' on cluster {self.cluster}. Error: {e}")
+
+    def uninstall(self, library: str = None, version: str = None, index: str = "pypi"):
+        """
+        Uninstall a library from the current Databricks cluster.
+
+        :param library: The name of the library to uninstall.
+        :type library: str
+        :param version: The version of the library to uninstall. Default is None.
+        :type version: str, optional
+        :param index: The index from which to uninstall the library ('pypi' or 'maven'). Default is 'pypi'.
+        :type index: str, optional
+
+        :raises ValueError: If the specified index is not supported.
+        """
+        if index.lower() == "pypi":
+            library = library if not version else f"{library}=={version}"
+            library_payload = {"package": library}
+        elif index.lower() == "maven":
+            library = library if not version else f"{library}:{version}"
+            library_payload = {"coordinates": library}
+        else:
+            raise ValueError(f"Index '{index}' is not supported.")
+
+        try:
+            self._databricks_api.managed_library.uninstall_libraries(self.cluster, libraries=[{index: library_payload}])
+            logging.info(f"Successfully triggered uninstall '{library}' on cluster {self.cluster}.")
+        except Exception as e:
+            raise Exception(f"Failed to trigger uninstall '{library}' on cluster {self.cluster}. Error: {e}")

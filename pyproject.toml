@@ -1,7 +1,7 @@
 [project]
 name = "hivecode"
 description = "Hivecode is a versatile and comprehensive Python library, with a focus on efficiency and reusability, Hivecode empowers developers and data enthusiasts alike to streamline their projects."
-version = "0.0.0.8.25"
+version = "0.0.0.8.26"
 requires-python = ">=3.8.0"
 readme = "README.rst"
 authors = [

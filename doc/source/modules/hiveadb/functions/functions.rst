@@ -9,3 +9,4 @@ Functions
     mount
     SecretManager
     TokenManager
+    LibraryManager

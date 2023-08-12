@@ -31,7 +31,7 @@ class DatabricksLoadControl:
         - drop: Drop the load control schema.
 
     """
-    def _init_(self):
+    def __init__(self):
         """
         Initialize a DatabricksLoadControl instance.
         """

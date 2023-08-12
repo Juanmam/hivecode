@@ -10,17 +10,40 @@ from hivecore.exceptions import StrategyNotDefinedError
 from hivecore.patterns import ConcreteStrategy, Context
 from hiveadb.functions import spark, dbutils
 
-
 from re import search
 from itertools import compress
+from pandas import DataFrame
 
 
 @ConcreteStrategy('create', custom_strategy='LoadControl')
 class DatabricksLoadControl:
+    """
+    This class represents a Databricks Load Control strategy for managing data loads.
+
+    :Attributes:
+        - has_unity (bool): Indicates whether the Unity catalog is enabled in the Spark configuration.
+
+    :Methods:
+        - create: Create and populate load control tables.
+        - read: Read data from load control tables.
+        - write: Write data to load control tables.
+        - delete: Delete data from load control tables.
+        - drop: Drop the load control schema.
+
+    """
     def _init_(self):
+        """
+        Initialize a DatabricksLoadControl instance.
+        """
         self.has_unity: bool = spark.conf.get('spark.databricks.unityCatalog.enabled').lower() == 'true'
 
-    def create(self, db_name: str = None, framework: str = "databricks") -> None:
+    def create(self, db_name: str = None) -> None:
+        """
+        Create and populate load control tables.
+
+        :param db_name: The name of the load control database.
+        :type db_name: str or None
+        """
         db_name = "data_governance" if self.has_unity else "load_control" 
         try:
             # Fetch current database
@@ -148,7 +171,21 @@ class DatabricksLoadControl:
         finally:
             spark.sql(f"USE {current_db}")
 
-    def read(self, source: str = None, subsource: str = None, tables: str = 'all', format: str = 'DataFrame'):
+    def read(self, source: str = None, subsource: str = None, tables: str = 'all', format: str = 'DataFrame') -> DataFrame:
+        """
+        Read data from load control tables.
+
+        :param source: The data source to read from.
+        :type source: str or None
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str or None
+        :param tables: The tables to read (options: 'all' or specific table names).
+        :type tables: str
+        :param format: The format of the data (default: 'DataFrame').
+        :type format: str
+        :return: Data read from the load control tables.
+        :rtype: DataFrame
+        """
         if tables == 'all':
             tables = ['files', 'meta', 'scope', 'schema', 'steward']
 
@@ -233,7 +270,43 @@ class DatabricksLoadControl:
         if format.lower() == 'dataframe':
             return results
 
-    def write(self, source: str, path: str, file_name: str, file_extension: str = '', subsource: str = '', delimeter: str = '', encoding: str = '', column_name: str = '', column_type: str = '', default_value: str = '', environment: str = '', zone: str = '', region: str = '', user: str = '', email: str = '', status: str = ''):
+    def write(self, source: str, path: str, file_name: str, file_extension: str = '', subsource: str = '', delimeter: str = '', encoding: str = '', column_name: str = '', column_type: str = '', default_value: str = '', environment: str = '', zone: str = '', region: str = '', user: str = '', email: str = '', status: str = '') -> None:
+        """
+        Write data to load control tables.
+
+        :param source: The data source to write.
+        :type source: str
+        :param path: The path of the data.
+        :type path: str
+        :param file_name: The name of the file.
+        :type file_name: str
+        :param file_extension: The file extension.
+        :type file_extension: str
+        :param subsource: The subsource of the data.
+        :type subsource: str
+        :param delimeter: The delimiter.
+        :type delimeter: str
+        :param encoding: The encoding.
+        :type encoding: str
+        :param column_name: The column name.
+        :type column_name: str
+        :param column_type: The column type.
+        :type column_type: str
+        :param default_value: The default value.
+        :type default_value: str
+        :param environment: The environment.
+        :type environment: str
+        :param zone: The zone.
+        :type zone: str
+        :param region: The region.
+        :type region: str
+        :param user: The user.
+        :type user: str
+        :param email: The email.
+        :type email: str
+        :param status: The status.
+        :type status: str
+        """
         def extract_tags(properties_str):
             if not properties_str:
                 return
@@ -281,7 +354,15 @@ class DatabricksLoadControl:
             VALUES ('{source}', '{subsource}', 'Insert', DEFAULT, '{user_}')          
         """)
 
-    def delete(self, source: str, subsource: str = None):
+    def delete(self, source: str, subsource: str = None) -> None:
+        """
+        Delete data from load control tables.
+
+        :param source: The data source to delete.
+        :type source: str
+        :param subsource: The subsource to delete (optional).
+        :type subsource: str or None
+        """
         try:
             def extract_tags(properties_str):
                 if not properties_str:
@@ -330,7 +411,13 @@ class DatabricksLoadControl:
             VALUES ('{source}', '{subsource}', 'Delete', DEFAULT, '{user_}')          
         """)
 
-    def drop(self, cascade: bool = False):
+    def drop(self, cascade: bool = False) -> None:
+        """
+        Drop the load control schema.
+
+        :param cascade: Whether to perform a cascading drop.
+        :type cascade: bool
+        """
         try:
             def extract_tags(properties_str):
                 if not properties_str:
@@ -353,16 +440,219 @@ class DatabricksLoadControl:
 
 @ConcreteStrategy('create', custom_strategy='LoadControl')
 class SqlLoadControl:
-    def _init_(self):
+    """
+    This class provides a Load Control Framework for managing data loads with different strategies.
+
+    :Attributes:
+        - has_unity (bool): Indicates whether the Unity catalog is enabled in the Spark configuration.
+
+    :Methods:
+        - create: Create and populate load control tables.
+        - read: Read data from load control tables.
+        - write: Write data to load control tables.
+        - delete: Delete data from load control tables.
+        - drop: Drop the load control schema.
+    """
+    def __init__(self, framework: str = 'databricks'):
+        """
+        Initialize the SqlLoadControl.
+
+        """
         self.has_unity: bool = spark.conf.get('spark.databricks.unityCatalog.enabled').lower() == 'true'
+
+    def create(self, db_name: str = None) -> None:
+        """
+        Create a new Load Control database.
+
+        :param db_name: The name of the database to be created.
+        :type db_name: str or None
+        """
+        return
+
+    def read(self, source: str = None, subsource: str = None, tables: str = 'all', format: str = 'DataFrame'):
+        """
+        Read data from a specified source.
+
+        :param source: The data source to read from.
+        :type source: str or None
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str or None
+        :param tables: The tables to read (options: 'all' or specific table names).
+        :type tables: str
+        :param format: The format in which to read the data (default: 'DataFrame').
+        :type format: str
+        """
+        return
+
+    def write(self, source: str, path: str, file_name: str, file_extension: str = '', subsource: str = '', delimeter: str = '', encoding: str = '', column_name: str = '', column_type: str = '', default_value: str = '', environment: str = '', zone: str = '', region: str = '', user: str = '', email: str = '', status: str = ''):
+        """
+        Write data to a specified destination.
+
+        :param source: The data source to write to.
+        :type source: str
+        :param path: The path where the data will be written.
+        :type path: str
+        :param file_name: The name of the file to be written.
+        :type file_name: str
+        :param file_extension: The file extension (optional).
+        :type file_extension: str
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str
+        :param delimeter: The delimiter to use for writing data (optional).
+        :type delimeter: str
+        :param encoding: The encoding to use for writing data (optional).
+        :type encoding: str
+        :param column_name: The name of the column (optional).
+        :type column_name: str
+        :param column_type: The data type of the column (optional).
+        :type column_type: str
+        :param default_value: The default value for the column (optional).
+        :type default_value: str
+        :param environment: The environment information (optional).
+        :type environment: str
+        :param zone: The zone information (optional).
+        :type zone: str
+        :param region: The region information (optional).
+        :type region: str
+        :param user: The user information (optional).
+        :type user: str
+        :param email: The email information (optional).
+        :type email: str
+        :param status: The status information (optional).
+        :type status: str
+        """
+        return
+
+    def delete(self, source: str, subsource: str = None):
+        """
+        Delete data from a specified source.
+
+        :param source: The data source to delete from.
+        :type source: str
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str or None
+        """
+        return
+
+    def drop(self, cascade: bool = False):
+        """
+        Drop the LoadControl instance.
+
+        :param cascade: Whether to perform a cascading drop (optional, default: False).
+        :type cascade: bool
+        """
+        return
 
 
 @Context
 class LoadControl:
-    def _init_(self, framework = 'databricks'):
+    """
+    This class provides a Load Control Framework for managing data loads with different strategies.
+
+    :Attributes:
+        - has_unity (bool): Indicates whether the Unity catalog is enabled in the Spark configuration.
+
+    :Methods:
+        - create: Create and populate load control tables.
+        - read: Read data from load control tables.
+        - write: Write data to load control tables.
+        - delete: Delete data from load control tables.
+        - drop: Drop the load control schema.
+    """
+    def __init__(self, framework: str = 'databricks'):
+        """
+        Initialize the LoadControl instance with the specified framework strategy.
+
+        :param framework: The framework strategy to use (options: 'databricks' or 'sql').
+        :type framework: str
+        :raises StrategyNotDefinedError: If an invalid framework is provided.
+        """
         if framework.lower() in ['databricks']:
             self.set_strategy(DatabricksLoadControl())
         elif framework.lower() in ['sql']:
             self.set_strategy(SqlLoadControl())
         else:
             raise StrategyNotDefinedError(framework)
+
+    def create(self, db_name: str = None) -> None:
+        """
+        Create a new Load Control database.
+
+        :param db_name: The name of the database to be created.
+        :type db_name: str or None
+        """
+        return
+
+    def read(self, source: str = None, subsource: str = None, tables: str = 'all', format: str = 'DataFrame'):
+        """
+        Read data from a specified source.
+
+        :param source: The data source to read from.
+        :type source: str or None
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str or None
+        :param tables: The tables to read (options: 'all' or specific table names).
+        :type tables: str
+        :param format: The format in which to read the data (default: 'DataFrame').
+        :type format: str
+        """
+        return
+
+    def write(self, source: str, path: str, file_name: str, file_extension: str = '', subsource: str = '', delimeter: str = '', encoding: str = '', column_name: str = '', column_type: str = '', default_value: str = '', environment: str = '', zone: str = '', region: str = '', user: str = '', email: str = '', status: str = ''):
+        """
+        Write data to a specified destination.
+
+        :param source: The data source to write to.
+        :type source: str
+        :param path: The path where the data will be written.
+        :type path: str
+        :param file_name: The name of the file to be written.
+        :type file_name: str
+        :param file_extension: The file extension (optional).
+        :type file_extension: str
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str
+        :param delimeter: The delimiter to use for writing data (optional).
+        :type delimeter: str
+        :param encoding: The encoding to use for writing data (optional).
+        :type encoding: str
+        :param column_name: The name of the column (optional).
+        :type column_name: str
+        :param column_type: The data type of the column (optional).
+        :type column_type: str
+        :param default_value: The default value for the column (optional).
+        :type default_value: str
+        :param environment: The environment information (optional).
+        :type environment: str
+        :param zone: The zone information (optional).
+        :type zone: str
+        :param region: The region information (optional).
+        :type region: str
+        :param user: The user information (optional).
+        :type user: str
+        :param email: The email information (optional).
+        :type email: str
+        :param status: The status information (optional).
+        :type status: str
+        """
+        return
+
+    def delete(self, source: str, subsource: str = None):
+        """
+        Delete data from a specified source.
+
+        :param source: The data source to delete from.
+        :type source: str
+        :param subsource: The subsource within the data source (optional).
+        :type subsource: str or None
+        """
+        return
+
+    def drop(self, cascade: bool = False):
+        """
+        Drop the LoadControl instance.
+
+        :param cascade: Whether to perform a cascading drop (optional, default: False).
+        :type cascade: bool
+        """
+        return

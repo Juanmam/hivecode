@@ -369,11 +369,10 @@ class SparkReader:
         - parquet(path: str, **params) -> DataFrame
 
         - delta(path: str, **params) -> DataFrame
-
+s
     """
 
     def __init__(self):
-
         pass
 
  
@@ -381,27 +380,16 @@ class SparkReader:
     def excel(self, path: str, header: bool = True, sheet_name: str = None, infer: bool = False, encoding: str = 'windows-1252', **params):
 
         """
-
             Read data from an Excel file using the Spark DataFrame API.
 
- 
-
             :param str path: The path to the Excel file.
-
             :param bool header: Whether the Excel file has headers.
-
             :param str sheet_name: The name of the sheet to read data from.
-
             :param bool infer: Whether to infer the schema from the data.
-
             :param str encoding: The character encoding of the Excel file.
-
             :param params: Additional parameters for Spark Excel reader.
-
             :return: The DataFrame containing the data from the Excel file.
-
             :rtype: pyspark.sql.DataFrame
-
         """
 
         try:
@@ -411,37 +399,21 @@ class SparkReader:
                 # TRY USING com.crealytics.spark.excel
 
                 return spark.read.format("com.crealytics.spark.excel")\
-
                         .option("header",header)\
-
                         .option("inferSchema",f"{infer}")\
-
                         .option("dataAddress", f"'{sheet_name}'!")\
-
                         .option("maxRowsInMemory", 20)\
-
                         .option("encoding", f"{encoding}")\
-
                         .option("treatEmptyValuesAsNulls", "true")\
-
                         .load(path)
-
             else:
-
                 return spark.read.format("com.crealytics.spark.excel")\
-
                         .option("header",header)\
-
                         .option("inferSchema",f"{infer}")\
-
                         .option("maxRowsInMemory", 20)\
-
                         .option("encoding", f"{encoding}")\
-
                         .option("treatEmptyValuesAsNulls", "true")\
-
                         .load(path)
-
         except:
 
             raise

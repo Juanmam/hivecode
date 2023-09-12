@@ -27,7 +27,8 @@ autodoc_mock_imports = [
    'databricks',
    'databricks.koalas',
    'seaborn',
-   'databricks_api'
+   'databricks_api',
+   'tiktoken'
 ]
 
 project = 'hivecode'

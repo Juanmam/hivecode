@@ -7,7 +7,7 @@ TokenManager
 Example
 -------
 
-To use the `Encoder` class, simply call it as follows:
+To use the `TokenManager` class, simply call it as follows:
 
 .. code-block:: python
 

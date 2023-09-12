@@ -10,3 +10,5 @@ Functions
     SecretManager
     TokenManager
     LibraryManager
+    AuditManager
+    DatabricksApi
